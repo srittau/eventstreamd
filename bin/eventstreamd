@@ -1,0 +1,7 @@
+#!/usr/bin/python3
+
+
+from evtstrd.server import run_notification_server
+
+
+run_notification_server()

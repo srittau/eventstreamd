@@ -1,0 +1,2 @@
+asserts==0.6
+json-get==1.0
