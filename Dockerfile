@@ -24,4 +24,5 @@ COPY docker.conf ./
 
 # Start eventstreamd
 EXPOSE 8888
-CMD ["/app/virtualenv/bin/eventstreamd", "-c", "/app/docker.conf"]
+COPY start.sh ./
+CMD ["/app/start.sh"]
