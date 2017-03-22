@@ -7,8 +7,6 @@ SOCKET_NAME = "/var/run/eventstreamd.sock"
 SOCKET_MODE = 0o0600
 
 HTTP_PORT = 8888
-CERT_FILE = "/etc/eventstreamd/ssl.crt"
-KEY_FILE = "/etc/eventstreamd/ssl.key"
 
 PING_INTERVAL = 20
 
@@ -20,10 +18,14 @@ class Config:
         self.socket_owner = None
         self.socket_group = None
         self.socket_mode = SOCKET_MODE
-        self.cert_file = CERT_FILE
-        self.key_file = KEY_FILE
+        self.cert_file = None
+        self.key_file = None
         self.http_port = HTTP_PORT
         self.ping_interval = PING_INTERVAL
+
+    @property
+    def with_ssl(self):
+        return self.cert_file is not None and self.key_file is not None
 
 
 def read_config(filename):
@@ -44,9 +46,9 @@ def read_config(filename):
         config.socket_group = parser.get(
             "General", "SocketGroup", fallback=None)
         config.cert_file = parser.get(
-            "General", "SSLCertificateFile", fallback=CERT_FILE)
+            "General", "SSLCertificateFile", fallback=None)
         config.key_file = parser.get(
-            "General", "SSLKeyFile", fallback=KEY_FILE)
+            "General", "SSLKeyFile", fallback=None)
         config.http_port = parser.getint(
             "General", "HTTPPort", fallback=HTTP_PORT)
     return config

@@ -81,9 +81,12 @@ class NotificationServer:
         self._loop.run_until_complete(f)
 
     def _start_http_server(self):
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(
-            self._config.cert_file, self._config.key_file)
+        if self._config.with_ssl:
+            ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            ssl_context.load_cert_chain(
+                self._config.cert_file, self._config.key_file)
+        else:
+            ssl_context = None
         f = asyncio.start_server(
             self._http_handler.handle, port=self._config.http_port,
             ssl=ssl_context)
