@@ -16,6 +16,7 @@ from urllib.parse import urlparse, parse_qs
 
 from jsonget import json_get
 
+from evtstrd.cmdargs import parse_command_line
 from evtstrd.config import Config
 from evtstrd.date import parse_iso_date
 from evtstrd.events import JSONEvent, PingEvent
@@ -27,7 +28,7 @@ from evtstrd.util import read_json_line
 
 
 def run_notification_server():
-    config = Config()
+    config = parse_command_line()
     asyncio.log.logger.disabled = True
     NotificationServer(config).run()
 
