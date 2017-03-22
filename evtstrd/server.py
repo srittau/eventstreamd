@@ -16,8 +16,8 @@ from urllib.parse import urlparse, parse_qs
 
 from jsonget import json_get
 
+from evtstrd.config import Config
 from evtstrd.date import parse_iso_date
-from evtstrd.defs import *
 from evtstrd.events import JSONEvent, PingEvent
 from evtstrd.exc import DisconnectedError
 from evtstrd.http import \
@@ -27,19 +27,21 @@ from evtstrd.util import read_json_line
 
 
 def run_notification_server():
+    config = Config()
     asyncio.log.logger.disabled = True
-    NotificationServer().run()
+    NotificationServer(config).run()
 
 
 class NotificationServer:
 
-    def __init__(self):
+    def __init__(self, config: Config) -> None:
+        self._config = config
         self._loop = asyncio.get_event_loop()
         self._listeners = defaultdict(list)
         self._stats = ServerStats()
         self._socket_handler = SocketHandler(self._listeners, loop=self._loop)
         self._http_handler = HTTPHandler(
-            self._listeners, self._stats, loop=self._loop)
+            config, self._listeners, self._stats, loop=self._loop)
 
     def run(self):
         self._remove_stale_socket()
@@ -47,20 +49,20 @@ class NotificationServer:
             self._run_loop()
         finally:
             try:
-                os.remove(SOCKET_NAME)
+                os.remove(self._config.socket_file)
             except FileNotFoundError:
                 pass
 
     def _remove_stale_socket(self):
-        if not os.path.exists(SOCKET_NAME):
+        if not os.path.exists(self._config.socket_file):
             return
         try:
-            fut = asyncio.open_unix_connection(SOCKET_NAME)
+            fut = asyncio.open_unix_connection(self._config.socket_file)
             self._loop.run_until_complete(fut)
         except ConnectionRefusedError:
-            os.remove(SOCKET_NAME)
+            os.remove(self._config.socket_file)
             logging.warning("removed stale socket file {}".format(
-                SOCKET_NAME))
+                self._config.socket_file))
         else:
             print("server already running, exiting", file=sys.stderr)
             sys.exit(1)
@@ -68,20 +70,21 @@ class NotificationServer:
     def _run_loop(self):
         self._start_socket()
         self._start_http_server()
-        os.chown(SOCKET_NAME, -1, getgrnam("www-data").gr_gid)
-        os.chmod(SOCKET_NAME, 0o660)
+        os.chown(self._config.socket_file, -1, getgrnam("www-data").gr_gid)
+        os.chmod(self._config.socket_file, 0o660)
         self._loop.run_forever()
 
     def _start_socket(self):
         f = asyncio.start_unix_server(
-            self._socket_handler.handle, path=SOCKET_NAME)
+            self._socket_handler.handle, path=self._config.socket_file)
         self._loop.run_until_complete(f)
 
     def _start_http_server(self):
         ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        ssl_context.load_cert_chain(CERT_FILE, KEY_FILE)
+        ssl_context.load_cert_chain(
+            self._config.cert_file, self._config.key_file)
         f = asyncio.start_server(
-            self._http_handler.handle, port=EVENTS_HTTP_PORT,
+            self._http_handler.handle, port=self._config.http_port,
             ssl=ssl_context)
         self._loop.run_until_complete(f)
 
@@ -139,7 +142,8 @@ class SocketHandler:
 
 class HTTPHandler:
 
-    def __init__(self, listeners, stats, *, loop=None):
+    def __init__(self, config: Config, listeners, stats, *, loop=None) -> None:
+        self._config = config
         self._listeners = listeners
         self._stats = stats
         self._loop = loop or asyncio.get_event_loop()
@@ -203,7 +207,7 @@ class HTTPHandler:
     def _create_listener(self, reader, writer, headers, subsystem, filters):
         logging.info("client subscribed to subsystem '{}'".format(subsystem))
         listener = Listener(
-            reader, writer, subsystem, filters, loop=self._loop)
+            self._config, reader, writer, subsystem, filters, loop=self._loop)
         listener.on_close = self._remove_listener
         listener.remote_host = writer.get_extra_info("peername")[0]
         listener.referer = headers.get("referer")
@@ -243,7 +247,10 @@ class HTTPHandler:
 
 class Listener:
 
-    def __init__(self, reader, writer, subsystem, filters, *, loop=None):
+    def __init__(
+            self, config: Config, reader, writer, subsystem, filters,
+            *, loop=None) -> None:
+        self._config = config
         self.loop = loop or asyncio.get_event_loop()
         self.subsystem = subsystem
         self.filters = filters
@@ -272,7 +279,8 @@ class Listener:
                 self._write_event(PingEvent())
             except DisconnectedError:
                 break
-            yield from asyncio.sleep(PING_INTERVAL, loop=self.loop)
+            yield from asyncio.sleep(
+                self._config.ping_interval, loop=self.loop)
 
     def _write_event(self, event):
         if self.reader.at_eof():
