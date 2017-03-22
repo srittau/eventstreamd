@@ -11,6 +11,7 @@ from http import HTTPStatus
 import logging
 import os
 import sys
+from pwd import getpwnam
 from typing import List
 from urllib.parse import urlparse, parse_qs
 
@@ -71,8 +72,7 @@ class NotificationServer:
     def _run_loop(self):
         self._start_socket()
         self._start_http_server()
-        os.chown(self._config.socket_file, -1, getgrnam("www-data").gr_gid)
-        os.chmod(self._config.socket_file, 0o660)
+        self._change_socket_permissions()
         self._loop.run_forever()
 
     def _start_socket(self):
@@ -88,6 +88,19 @@ class NotificationServer:
             self._http_handler.handle, port=self._config.http_port,
             ssl=ssl_context)
         self._loop.run_until_complete(f)
+
+    def _change_socket_permissions(self):
+        os.chmod(self._config.socket_file, self._config.socket_mode)
+        if self._config.socket_owner is None:
+            new_owner = -1
+        else:
+            new_owner = getpwnam(self._config.socket_owner).pw_uid
+        if self._config.socket_group is None:
+            new_group = -1
+        else:
+            new_group = getgrnam(self._config.socket_group).gr_gid
+        if new_owner != -1 or new_group != -1:
+            os.chown(self._config.socket_file, new_owner, new_group)
 
 
 class SocketHandler:
