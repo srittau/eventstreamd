@@ -46,7 +46,10 @@ class NotificationServer:
         try:
             self._run_loop()
         finally:
-            os.remove(SOCKET_NAME)
+            try:
+                os.remove(SOCKET_NAME)
+            except FileNotFoundError:
+                pass
 
     def _remove_stale_socket(self):
         if not os.path.exists(SOCKET_NAME):
