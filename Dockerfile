@@ -16,7 +16,8 @@ COPY bin/ ./bin
 COPY evtstrd/ ./evtstrd
 COPY evtstrd_test/ ./evtstrd_test
 RUN ./virtualenv/bin/pip install .
+RUN rm -r requirements.txt README.md setup.py evtstrd evtstrd_test bin
 
 # Start eventstreamd
 EXPOSE 8888
-CMD ["/app/virtualenv/bin/python", "/app/bin/eventstreamd"]
+CMD ["/app/virtualenv/bin/eventstreamd"]
