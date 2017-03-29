@@ -31,7 +31,10 @@ from evtstrd.util import read_json_line
 def run_notification_server():
     config = parse_command_line()
     asyncio.log.logger.disabled = True
-    NotificationServer(config).run()
+    try:
+        NotificationServer(config).run()
+    except KeyboardInterrupt:
+        pass
 
 
 class NotificationServer:
