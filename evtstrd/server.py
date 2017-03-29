@@ -3,6 +3,7 @@ import asyncio.log
 import datetime
 import json
 import re
+import signal
 import ssl
 from collections import defaultdict
 from email.utils import formatdate
@@ -31,22 +32,26 @@ from evtstrd.util import read_json_line
 def run_notification_server():
     config = parse_command_line()
     asyncio.log.logger.disabled = True
-    try:
-        NotificationServer(config).run()
-    except KeyboardInterrupt:
-        pass
+    NotificationServer(config).run()
 
 
 class NotificationServer:
 
     def __init__(self, config: Config) -> None:
         self._config = config
+        self._http_server = None
+        self._socket_server = None
         self._loop = asyncio.get_event_loop()
         self._listeners = defaultdict(list)
         self._stats = ServerStats()
         self._socket_handler = SocketHandler(self._listeners, loop=self._loop)
         self._http_handler = HTTPHandler(
             config, self._listeners, self._stats, loop=self._loop)
+        self._setup_signal_handlers()
+
+    def _setup_signal_handlers(self):
+        self._loop.add_signal_handler(signal.SIGINT, self._loop.stop)
+        self._loop.add_signal_handler(signal.SIGTERM, self._loop.stop)
 
     def run(self):
         self._remove_stale_socket()
@@ -77,11 +82,24 @@ class NotificationServer:
         self._start_http_server()
         self._change_socket_permissions()
         self._loop.run_forever()
+        self._shutdown()
+
+    def _shutdown(self):
+        fs = []
+        if self._http_server:
+            self._http_server.close()
+            fs.append(self._http_server.wait_closed())
+        if self._socket_server:
+            self._socket_server.close()
+            fs.append(self._socket_server.wait_closed())
+        self._loop.run_until_complete(asyncio.wait(fs, timeout=5))
+        self._http_handler.disconnect_all()
+        self._loop.shutdown_asyncgens()
 
     def _start_socket(self):
         f = asyncio.start_unix_server(
             self._socket_handler.handle, path=self._config.socket_file)
-        self._loop.run_until_complete(f)
+        self._socket_server = self._loop.run_until_complete(f)
 
     def _start_http_server(self):
         if self._config.with_ssl:
@@ -93,7 +111,7 @@ class NotificationServer:
         f = asyncio.start_server(
             self._http_handler.handle, port=self._config.http_port,
             ssl=ssl_context)
-        self._loop.run_until_complete(f)
+        self._http_server = self._loop.run_until_complete(f)
 
     def _change_socket_permissions(self):
         os.chmod(self._config.socket_file, self._config.socket_mode)
@@ -249,11 +267,15 @@ class HTTPHandler:
             raise CGIArgumentError("filter", "could not parse filter")
         return args["subsystem"][0], filters
 
-    def _handle_get_stats(self, writer):
+    @property
+    def _all_listeners(self):
         all_listeners = []
         for key in self._listeners:
             all_listeners.extend(self._listeners[key])
-        j = json_stats(self._stats, all_listeners)
+        return all_listeners
+
+    def _handle_get_stats(self, writer):
+        j = json_stats(self._stats,self._all_listeners)
         response = json.dumps(j).encode("utf-8")
         response_headers = self._default_headers() + [
             ("Connection", "close"),
@@ -263,6 +285,10 @@ class HTTPHandler:
         write_http_head(writer, HTTPStatus.OK, response_headers)
         writer.write(response)
         writer.close()
+
+    def disconnect_all(self):
+        for listener in self._all_listeners:
+            listener.disconnect()
 
 
 class Listener:
@@ -308,6 +334,9 @@ class Listener:
                 self.on_close(self)
             raise DisconnectedError()
         write_chunk(self.writer, bytes(event))
+
+    def disconnect(self):
+        self.writer.close()
 
 
 _filter_re = re.compile(r"^([a-z.-]+)(=|>=|<=)(.*)$")
