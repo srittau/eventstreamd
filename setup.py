@@ -12,7 +12,7 @@ setup(
     name="eventstreamd",
     version="0.5.2",
     description="Simple Event Stream Server",
-    long_description=read("README.md"),
+    long_description=read("README.rst"),
     author="Sebastian Rittau",
     author_email="srittau@rittau.biz",
     url="https://github.com/srittau/eventstreamd",
