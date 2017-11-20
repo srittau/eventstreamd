@@ -5,15 +5,16 @@ import json
 import re
 import signal
 import ssl
+import logging
+import os
+import sys
+from asyncio.events import AbstractEventLoop
 from collections import defaultdict
 from email.utils import formatdate
 from grp import getgrnam
 from http import HTTPStatus
-import logging
-import os
-import sys
 from pwd import getpwnam
-from typing import List
+from typing import List, Dict, Generator
 from urllib.parse import urlparse, parse_qs
 
 from jsonget import json_get
@@ -42,7 +43,7 @@ class NotificationServer:
         self._http_server = None
         self._socket_server = None
         self._loop = asyncio.get_event_loop()
-        self._listeners = defaultdict(list)
+        self._listeners: Dict[str, List[Listener]] = defaultdict(list)
         self._stats = ServerStats()
         self._socket_handler = SocketHandler(self._listeners, loop=self._loop)
         self._http_handler = HTTPHandler(
@@ -129,12 +130,14 @@ class NotificationServer:
 
 class SocketHandler:
 
-    def __init__(self, listeners, *, loop=None):
+    def __init__(self, listeners: Dict[str, List["Listener"]], *,
+                 loop: AbstractEventLoop = None) \
+            -> None:
         self._listeners = listeners
         self._loop = loop or asyncio.get_event_loop()
 
     @asyncio.coroutine
-    def handle(self, reader, writer):
+    def handle(self, reader, _) -> Generator[str, None, None]:
         while True:
             try:
                 message = yield from read_json_line(reader)
@@ -155,7 +158,7 @@ class SocketHandler:
         else:
             self._notify_listeners(subsystem, event, data, id)
 
-    def _notify_listeners(self, subsystem, event_type, data, id):
+    def _notify_listeners(self, subsystem: str, event_type, data, id) -> None:
         listeners = self._listeners[subsystem]
         # Copy the list of listeners, because it can be modified during the
         # iteration.

@@ -7,7 +7,7 @@ Header = Tuple[str, str]
 
 class HTTPError(Exception):
 
-    def __init__(self, status, message):
+    def __init__(self, status: HTTPStatus, message: str) -> None:
         super().__init__(message)
         self.status = status
         self.headers: List[Header] = []
@@ -86,8 +86,8 @@ def read_http_head(reader):
 
 def write_http_head(writer, code: HTTPStatus, headers: Iterable[Header]) \
         -> None:
-    line = "HTTP/1.1 {} {}\r\n".format(code.value, code.phrase)
-    writer.write(line.encode("ascii"))
+    status_line = "HTTP/1.1 {} {}\r\n".format(code.value, code.phrase)
+    writer.write(status_line.encode("ascii"))
     for h, v in headers:
         line = h.encode("ascii") + b": " + v.encode("ascii") + b"\r\n"
         writer.write(line)

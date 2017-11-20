@@ -1,7 +1,7 @@
 import datetime
-from unittest.case import TestCase
+from unittest import TestCase
 
-from asserts import assert_raises, assert_equal, assert_raises_regex
+from asserts import assert_equal, assert_raises_regex
 
 from evtstrd.date import parse_iso_date
 
