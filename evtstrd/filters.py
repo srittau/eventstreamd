@@ -64,10 +64,12 @@ class DateFilter(Filter):
         return parse_iso_date(v)
 
 
-_filter_re = re.compile(r"^([a-z.-]+)(=|>=|<=)(.*)$")
+_filter_re = re.compile(r"^([a-z.-]+)(=|>=|<=|<|>)(.*)$")
 _comparators = {
     "=": lambda v1, v2: v1 == v2,
+    ">": lambda v1, v2: v1 > v2,
     ">=": lambda v1, v2: v1 >= v2,
+    "<": lambda v1, v2: v1 < v2,
     "<=": lambda v1, v2: v1 <= v2,
 }
 
@@ -85,7 +87,7 @@ def _parse_value(v: str) -> Union[str, int, datetime.date]:
 def parse_filter(string: str) -> Filter:
     m = _filter_re.match(string)
     if not m:
-        raise ValueError()
+        raise ValueError(f"invalid filter '{string}'")
     field = m.group(1).replace(".", "/")
     comparator = _comparators[m.group(2)]
     value = _parse_value(m.group(3))

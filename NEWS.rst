@@ -1,6 +1,11 @@
 Changes in eventstreamd 0.5.4
 =============================
 
+Improvements
+------------
+
+* Filters not support lower than and greater than.
+
 Changes in eventstreamd 0.5.3
 =============================
 

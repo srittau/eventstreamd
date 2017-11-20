@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from asserts import assert_true, assert_false, assert_equal
 
-from evtstrd.filters import StringFilter, parse_filter
+from evtstrd.filters import parse_filter
 
 
 class FilterTest(TestCase):
@@ -24,3 +24,15 @@ class FilterTest(TestCase):
         assert_true(filter_({"foo": {"bar": "AAA"}}))
         assert_true(filter_({"foo": {"bar": "ABC"}}))
         assert_false(filter_({"foo": {"bar": "CAA"}}))
+
+    def test_string_filter__lt(self) -> None:
+        filter_ = parse_filter("foo.bar<'ABC'")
+        assert_true(filter_({"foo": {"bar": "AAA"}}))
+        assert_false(filter_({"foo": {"bar": "ABC"}}))
+        assert_false(filter_({"foo": {"bar": "CAA"}}))
+
+    def test_string_filter__gt(self) -> None:
+        filter_ = parse_filter("foo.bar>'ABC'")
+        assert_false(filter_({"foo": {"bar": "AAA"}}))
+        assert_false(filter_({"foo": {"bar": "ABC"}}))
+        assert_true(filter_({"foo": {"bar": "CAA"}}))
