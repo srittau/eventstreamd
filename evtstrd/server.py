@@ -146,11 +146,10 @@ class SocketHandler:
         self._listeners = listeners
         self._loop = loop or asyncio.get_event_loop()
 
-    @asyncio.coroutine
-    def handle(self, reader: StreamReader, _: StreamWriter) -> Any:
+    async def handle(self, reader: StreamReader, _: StreamWriter) -> None:
         while True:
             try:
-                message = yield from read_json_line(reader)
+                message = await read_json_line(reader)
             except DisconnectedError:
                 break
             action = json_get(message, "action", str)
@@ -202,25 +201,24 @@ class HTTPHandler:
         self._stats = stats
         self._loop = loop or asyncio.get_event_loop()
 
-    @asyncio.coroutine
-    def handle(self, reader: StreamReader, writer: StreamWriter) -> Any:
+    async def handle(self, reader: StreamReader, writer: StreamWriter) -> None:
         try:
-            method, path, headers = yield from read_http_head(reader)
-            yield from self._handle_request(
+            method, path, headers = await read_http_head(reader)
+            await self._handle_request(
                 reader, writer, method, path, headers)
         except HTTPError as exc:
             write_http_error(writer, exc)
         writer.close()
 
-    @asyncio.coroutine
-    def _handle_request(self, reader: StreamReader, writer: StreamWriter,
-                        method: str, path: str, headers: Dict[str, str]) \
-            -> Any:
+    async def _handle_request(
+            self, reader: StreamReader, writer: StreamWriter,
+            method: str, path: str, headers: Dict[str, str]) \
+            -> None:
         url = urlparse(path)
         if url.path == "/events":
             if method != "GET":
                 raise MethodNotAllowedError(method)
-            yield from self._handle_get_events(reader, writer, url, headers)
+            await self._handle_get_events(reader, writer, url, headers)
         elif url.path == "/stats":
             if method != "GET":
                 raise MethodNotAllowedError(method)
@@ -234,9 +232,9 @@ class HTTPHandler:
             ("Server", "zzb-notificationd"),
         ]
 
-    @asyncio.coroutine
-    def _handle_get_events(self, reader: StreamReader, writer: StreamWriter,
-                           url: ParseResult, headers: Dict[str, str]) -> Any:
+    async def _handle_get_events(
+            self, reader: StreamReader, writer: StreamWriter,
+            url: ParseResult, headers: Dict[str, str]) -> None:
         subsystem, filters = self._parse_event_args(url.query)
         response_headers = self._default_headers() + [
             ("Transfer-Encoding", "chunked"),
@@ -250,18 +248,18 @@ class HTTPHandler:
                 ("Access-Control-Allow-Origin", headers["origin"]),
             ])
         write_http_head(writer, HTTPStatus.OK, response_headers)
-        yield from self._setup_listener(
+        await self._setup_listener(
             reader, writer, headers, subsystem, filters)
 
-    @asyncio.coroutine
-    def _setup_listener(self, reader: StreamReader, writer: StreamWriter,
-                        headers: Dict[str, str], subsystem: str,
-                        filters: Sequence["Filter"]) -> Any:
+    async def _setup_listener(
+            self, reader: StreamReader, writer: StreamWriter,
+            headers: Dict[str, str], subsystem: str,
+            filters: Sequence["Filter"]) -> None:
         listener = self._create_listener(
             reader, writer, headers, subsystem, filters)
         self._listeners[subsystem].append(listener)
         self._stats.total_connections += 1
-        yield from listener.ping_loop()
+        await listener.ping_loop()
 
     def _create_listener(self, reader: StreamReader, writer: StreamWriter,
                          headers: Mapping[str, str], subsystem: str,
@@ -342,14 +340,13 @@ class Listener:
             except DisconnectedError:
                 pass
 
-    @asyncio.coroutine
-    def ping_loop(self) -> Any:
+    async def ping_loop(self) -> None:
         while True:
             try:
                 self._write_event(PingEvent())
             except DisconnectedError:
                 break
-            yield from asyncio.sleep(
+            await asyncio.sleep(
                 self._config.ping_interval, loop=self.loop)
 
     def _write_event(self, event: Event) -> None:

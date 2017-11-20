@@ -1,7 +1,6 @@
-import asyncio
 from asyncio.streams import StreamWriter, StreamReader
 from http import HTTPStatus
-from typing import cast, Tuple, Iterable, List, Dict, Any
+from typing import Tuple, Iterable, List, Dict
 
 Header = Tuple[str, str]
 
@@ -43,20 +42,18 @@ class MethodNotAllowedError(HTTPError):
         self.method = method
 
 
-@asyncio.coroutine
-def read_http_head(reader: StreamReader) -> Any:
+async def read_http_head(reader: StreamReader) \
+        -> Tuple[str, str, Dict[str, str]]:
 
-    @asyncio.coroutine
-    def read_line() -> Any:
-        line_ = yield from reader.readline()
+    async def read_line() -> str:
+        line_ = await reader.readline()
         try:
             return line_.decode("ascii").strip()
         except UnicodeDecodeError:
             raise BadRequestError("non-ASCII characters in header")
 
-    @asyncio.coroutine
-    def read_request_line() -> Any:
-        line_ = yield from read_line()
+    async def read_request_line() -> Tuple[str, str]:
+        line_ = await read_line()
         try:
             m, p, http_tag = line_.split(" ")
         except ValueError:
@@ -73,13 +70,13 @@ def read_http_head(reader: StreamReader) -> Any:
         except ValueError:
             raise BadRequestError("invalid header line")
 
-    method, path = yield from read_request_line()
+    method, path = await read_request_line()
     headers = {}
     while True:
-        line = yield from read_line()
+        line = await read_line()
         if not line:
             break
-        he, va = parse_header_line(cast(str, line))
+        he, va = parse_header_line(line)
         headers[he.lower()] = va
 
     return method, path, headers

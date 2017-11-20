@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 from asyncio.streams import StreamReader
@@ -7,10 +6,9 @@ from typing import Any
 from evtstrd.exc import DisconnectedError
 
 
-@asyncio.coroutine
-def read_json_line(reader: StreamReader) -> Any:
+async def read_json_line(reader: StreamReader) -> Any:
     while True:
-        line = yield from reader.readline()
+        line = await reader.readline()
         if line:
             try:
                 return json.loads(line.decode("utf-8").strip())
