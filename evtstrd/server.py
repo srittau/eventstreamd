@@ -3,7 +3,6 @@ import asyncio.log
 import datetime
 import itertools
 import json
-import re
 import signal
 import ssl
 import logging
@@ -18,24 +17,20 @@ from http import HTTPStatus
 from pwd import getpwnam
 from ssl import SSLContext
 from typing import \
-    List, Dict, Any, Sequence, Callable, Union, Type, Tuple, \
-    Mapping, Optional
+    List, Dict, Any, Sequence, Callable, Tuple, Mapping, Optional
 from urllib.parse import urlparse, parse_qs, ParseResult
 
-from jsonget import json_get, JsonType, JsonValue
+from jsonget import json_get, JsonValue
 
 from evtstrd.cmdargs import parse_command_line
 from evtstrd.config import Config
-from evtstrd.date import parse_iso_date
 from evtstrd.events import JSONEvent, PingEvent, Event
 from evtstrd.exc import DisconnectedError
+from evtstrd.filters import Filter, parse_filter
 from evtstrd.http import \
     HTTPError, CGIArgumentError, NotFoundError, MethodNotAllowedError, \
     read_http_head, write_http_error, write_http_head, write_chunk, Header
 from evtstrd.util import read_json_line
-
-
-_Comparator = Callable[[str, Any], bool]
 
 
 def run_notification_server() -> None:
@@ -257,7 +252,7 @@ class HTTPHandler:
     async def _setup_listener(
             self, reader: StreamReader, writer: StreamWriter,
             headers: Dict[str, str], subsystem: str,
-            filters: Sequence["Filter"]) -> None:
+            filters: Sequence[Filter]) -> None:
         listener = self._create_listener(
             reader, writer, headers, subsystem, filters)
         self._listeners[subsystem].append(listener)
@@ -266,7 +261,7 @@ class HTTPHandler:
 
     def _create_listener(self, reader: StreamReader, writer: StreamWriter,
                          headers: Mapping[str, str], subsystem: str,
-                         filters: Sequence["Filter"]) -> "Listener":
+                         filters: Sequence[Filter]) -> "Listener":
         listener = Listener(
             self._config, reader, writer, subsystem, filters, loop=self._loop)
         listener.on_close = self._remove_listener
@@ -281,7 +276,7 @@ class HTTPHandler:
                      f"'{listener.subsystem}'")
         self._listeners[listener.subsystem].remove(listener)
 
-    def _parse_event_args(self, query: str) -> Tuple[str, List["Filter"]]:
+    def _parse_event_args(self, query: str) -> Tuple[str, List[Filter]]:
         args = parse_qs(query)
         if "subsystem" not in args:
             raise CGIArgumentError("subsystem", "missing argument")
@@ -321,7 +316,7 @@ class Listener:
 
     def __init__(
             self, config: Config, reader: StreamReader, writer: StreamWriter,
-            subsystem: str, filters: Sequence["Filter"],
+            subsystem: str, filters: Sequence[Filter],
             *, loop: AbstractEventLoop = None) -> None:
         self.id = next(self._id_counter)
         self._config = config
@@ -371,83 +366,6 @@ class Listener:
 
     def disconnect(self) -> None:
         self.writer.close()
-
-
-_filter_re = re.compile(r"^([a-z.-]+)(=|>=|<=)(.*)$")
-_comparators = {
-    "=": lambda v1, v2: v1 == v2,
-    ">=": lambda v1, v2: v1 >= v2,
-    "<=": lambda v1, v2: v1 <= v2,
-}
-
-
-def parse_filter(string: str) -> "Filter":
-    def parse_value(v: str) -> Union[str, int, datetime.date]:
-        if len(v) >= 2 and v.startswith("'") and v.endswith("'"):
-            return v[1:-1]
-        try:
-            return parse_iso_date(v)
-        except ValueError:
-            pass
-        return int(v)
-
-    m = _filter_re.match(string)
-    if not m:
-        raise ValueError()
-    field = m.group(1).replace(".", "/")
-    comparator = _comparators[m.group(2)]
-    value = parse_value(m.group(3))
-    if type(value) == datetime.date:
-        cls: Type[Filter] = DateFilter
-    else:
-        cls = Filter
-    filter_ = cls(field, comparator, value)
-    filter_.string = string
-    return filter_
-
-
-class Filter:
-
-    def __init__(self, field: str, comparator: _Comparator,
-                 value: Any) -> None:
-        self._field = field
-        self._comparator = comparator
-        self._value = value
-        self.string = ""
-
-    def __call__(self, message: JsonValue) -> bool:
-        try:
-            v = self._get_value(message)
-        except ValueError:
-            return False
-        return self._comparator(v, self._value)
-
-    def __str__(self) -> str:
-        return self.string
-
-    def _get_value(self, message: JsonValue) -> Any:
-        try:
-            v = json_get(message, self._field, self.field_type)
-        except (ValueError, TypeError):
-            raise ValueError()
-        return self.parse_value(v)
-
-    @property
-    def field_type(self) -> JsonType:
-        return type(self._value)
-
-    def parse_value(self, v: str) -> Any:
-        return v
-
-
-class DateFilter(Filter):
-
-    @property
-    def field_type(self) -> type:
-        return str
-
-    def parse_value(self, v: str) -> datetime.date:
-        return parse_iso_date(v)
 
 
 class ServerStats:
