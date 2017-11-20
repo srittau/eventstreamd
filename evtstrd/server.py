@@ -115,11 +115,11 @@ class NotificationServer:
 
     def _change_socket_permissions(self):
         os.chmod(self._config.socket_file, self._config.socket_mode)
-        if self._config.socket_owner is None:
+        if not self._config.socket_owner:
             new_owner = -1
         else:
             new_owner = getpwnam(self._config.socket_owner).pw_uid
-        if self._config.socket_group is None:
+        if not self._config.socket_group:
             new_group = -1
         else:
             new_group = getgrnam(self._config.socket_group).gr_gid

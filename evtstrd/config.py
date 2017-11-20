@@ -24,8 +24,8 @@ class Config:
         self.ping_interval = PING_INTERVAL
 
     @property
-    def with_ssl(self):
-        return self.cert_file is not None and self.key_file is not None
+    def with_ssl(self) -> bool:
+        return bool(self.cert_file) and bool(self.key_file)
 
 
 def read_config(filename):
@@ -42,13 +42,13 @@ def read_config(filename):
         else:
             config.socket_mode = int(socket_mode, base=8)
         config.socket_owner = parser.get(
-            "General", "SocketOwner", fallback=None)
+            "General", "SocketOwner", fallback="")
         config.socket_group = parser.get(
-            "General", "SocketGroup", fallback=None)
+            "General", "SocketGroup", fallback="")
         config.cert_file = parser.get(
-            "General", "SSLCertificateFile", fallback=None)
+            "General", "SSLCertificateFile", fallback="")
         config.key_file = parser.get(
-            "General", "SSLKeyFile", fallback=None)
+            "General", "SSLKeyFile", fallback="")
         config.http_port = parser.getint(
             "General", "HTTPPort", fallback=HTTP_PORT)
     return config
