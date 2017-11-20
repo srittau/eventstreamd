@@ -1,2 +1,2 @@
-asserts==0.6
-json-get==1.0
+asserts==0.8.0
+json-get==1.0.1
