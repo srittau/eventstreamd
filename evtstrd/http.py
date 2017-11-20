@@ -1,3 +1,4 @@
+import logging
 from asyncio.streams import StreamWriter, StreamReader
 from http import HTTPStatus
 from typing import Tuple, Iterable, List, Dict
@@ -104,3 +105,6 @@ def write_chunk(writer: StreamWriter, data: bytes) -> None:
     writer.write(b"\r\n")
     writer.write(data)
     writer.write(b"\r\n")
+    encoded = data.decode('utf-8', errors='ignore').replace("\r", "\\r"). \
+        replace("\n", "\\n")
+    logging.debug(f"wrote chunk to listener: {encoded}")

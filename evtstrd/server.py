@@ -1,6 +1,7 @@
 import asyncio
 import asyncio.log
 import datetime
+import itertools
 import json
 import re
 import signal
@@ -156,11 +157,10 @@ class SocketHandler:
             except DisconnectedError:
                 break
             action = json_get(message, "action", str)
-            logging.debug("received a '{}' message".format(action))
             if action == "notify":
                 self._notify_listeners_about_message(message)
             else:
-                logging.warning("received unknown action '{}'".format(action))
+                logging.warning(f"received unknown action '{action}'")
 
     def _notify_listeners_about_message(self, message: JsonValue) -> None:
         try:
@@ -178,8 +178,8 @@ class SocketHandler:
         for listener in listeners[:]:
             listener.notify(event_type, data, id)
         logging.info(
-            "notified {} listeners about {} event in subsystem '{}'".format(
-                len(listeners), event_type, subsystem))
+            f"notified {len(listeners)} listeners about '{event_type}' event "
+            f"in subsystem '{subsystem}'")
 
     @staticmethod
     def _get_event_data(message: JsonValue) -> Tuple[str, str, JsonValue, str]:
@@ -267,18 +267,18 @@ class HTTPHandler:
     def _create_listener(self, reader: StreamReader, writer: StreamWriter,
                          headers: Mapping[str, str], subsystem: str,
                          filters: Sequence["Filter"]) -> "Listener":
-        logging.info("client subscribed to subsystem '{}'".format(subsystem))
         listener = Listener(
             self._config, reader, writer, subsystem, filters, loop=self._loop)
         listener.on_close = self._remove_listener
         listener.remote_host = writer.get_extra_info("peername")[0]
         listener.referer = headers.get("referer")
+        logging.info(
+            f"client {listener} subscribed to subsystem '{subsystem}'")
         return listener
 
     def _remove_listener(self, listener: "Listener") -> None:
-        logging.info(
-            "client disconnected from subsystem '{}'".format(
-                listener.subsystem))
+        logging.info(f"client {listener} disconnected from subsystem "
+                     f"'{listener.subsystem}'")
         self._listeners[listener.subsystem].remove(listener)
 
     def _parse_event_args(self, query: str) -> Tuple[str, List["Filter"]]:
@@ -317,10 +317,13 @@ class HTTPHandler:
 
 class Listener:
 
+    _id_counter = itertools.count(1)
+
     def __init__(
             self, config: Config, reader: StreamReader, writer: StreamWriter,
             subsystem: str, filters: Sequence["Filter"],
             *, loop: AbstractEventLoop = None) -> None:
+        self.id = next(self._id_counter)
         self._config = config
         self.loop = loop or asyncio.get_event_loop()
         self.subsystem = subsystem
@@ -332,16 +335,23 @@ class Listener:
         self.remote_host: Optional[str] = None
         self.referer: Optional[str] = None
 
+    def __str__(self) -> str:
+        return f"#{self.id}"
+
     def __repr__(self) -> str:
         return "<Listener 0x{:x} for {}>".format(id(self), self.subsystem)
 
     def notify(self, event_type: str, data: Any, id: str = None) -> None:
         if all(f(data) for f in self.filters):
+            logging.debug(f"notifying client {self}")
             event = JSONEvent(event_type, data, id)
             try:
                 self._write_event(event)
             except DisconnectedError:
                 pass
+        else:
+            logging.debug(
+                f"notifying client {self}: not all filters matched")
 
     async def ping_loop(self) -> None:
         while True:
