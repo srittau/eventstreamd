@@ -1,6 +1,11 @@
 Changes in eventstreamd 0.5.3
 =============================
 
+Docker
+------
+
+* Support debug mode using the ``DEBUG`` environment variable.
+
 Changes in eventstreamd 0.5.2
 =============================
 
