@@ -1,3 +1,6 @@
+Changes in eventstreamd 0.5.4
+=============================
+
 Changes in eventstreamd 0.5.3
 =============================
 
