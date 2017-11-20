@@ -39,7 +39,7 @@ _Comparator = Callable[[str, Any], bool]
 
 def run_notification_server() -> None:
     config = parse_command_line()
-    asyncio.log.logger.disabled = True  # type: ignore
+    logging.getLogger("asyncio").disabled = True
     NotificationServer(config).run()
 
 
