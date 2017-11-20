@@ -4,4 +4,4 @@ Changes in eventstreamd 0.5.1
 Bug fixes
 ---------
 
-  * Graceful shutdown on SIGTERM and SIGINT.
+* Graceful shutdown on `SIGTERM` and `SIGINT`.
