@@ -9,20 +9,24 @@ import logging
 import os
 import sys
 from asyncio.events import AbstractEventLoop
+from asyncio.streams import StreamReader, StreamWriter
 from collections import defaultdict
 from email.utils import formatdate
 from grp import getgrnam
 from http import HTTPStatus
 from pwd import getpwnam
-from typing import List, Dict, Generator
-from urllib.parse import urlparse, parse_qs
+from ssl import SSLContext
+from typing import \
+    List, Dict, Any, Sequence, Callable, Union, Type, Tuple, \
+    Mapping, Optional
+from urllib.parse import urlparse, parse_qs, ParseResult
 
-from jsonget import json_get
+from jsonget import json_get, JsonType, JsonValue
 
 from evtstrd.cmdargs import parse_command_line
 from evtstrd.config import Config
 from evtstrd.date import parse_iso_date
-from evtstrd.events import JSONEvent, PingEvent
+from evtstrd.events import JSONEvent, PingEvent, Event
 from evtstrd.exc import DisconnectedError
 from evtstrd.http import \
     HTTPError, CGIArgumentError, NotFoundError, MethodNotAllowedError, \
@@ -30,9 +34,12 @@ from evtstrd.http import \
 from evtstrd.util import read_json_line
 
 
-def run_notification_server():
+_Comparator = Callable[[str, Any], bool]
+
+
+def run_notification_server() -> None:
     config = parse_command_line()
-    asyncio.log.logger.disabled = True
+    asyncio.log.logger.disabled = True  # type: ignore
     NotificationServer(config).run()
 
 
@@ -50,11 +57,11 @@ class NotificationServer:
             config, self._listeners, self._stats, loop=self._loop)
         self._setup_signal_handlers()
 
-    def _setup_signal_handlers(self):
+    def _setup_signal_handlers(self) -> None:
         self._loop.add_signal_handler(signal.SIGINT, self._loop.stop)
         self._loop.add_signal_handler(signal.SIGTERM, self._loop.stop)
 
-    def run(self):
+    def run(self) -> None:
         self._remove_stale_socket()
         try:
             self._run_loop()
@@ -64,7 +71,7 @@ class NotificationServer:
             except FileNotFoundError:
                 pass
 
-    def _remove_stale_socket(self):
+    def _remove_stale_socket(self) -> None:
         if not os.path.exists(self._config.socket_file):
             return
         try:
@@ -78,15 +85,15 @@ class NotificationServer:
             print("server already running, exiting", file=sys.stderr)
             sys.exit(1)
 
-    def _run_loop(self):
+    def _run_loop(self) -> None:
         self._start_socket()
         self._start_http_server()
         self._change_socket_permissions()
         self._loop.run_forever()
         self._shutdown()
 
-    def _shutdown(self):
-        fs = []
+    def _shutdown(self) -> None:
+        fs: List[Any] = []
         if self._http_server:
             self._http_server.close()
             fs.append(self._http_server.wait_closed())
@@ -97,16 +104,19 @@ class NotificationServer:
         self._http_handler.disconnect_all()
         self._loop.shutdown_asyncgens()
 
-    def _start_socket(self):
+    def _start_socket(self) -> None:
         f = asyncio.start_unix_server(
             self._socket_handler.handle, path=self._config.socket_file)
         self._socket_server = self._loop.run_until_complete(f)
 
-    def _start_http_server(self):
+    def _start_http_server(self) -> None:
         if self._config.with_ssl:
-            ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            ssl_context.load_cert_chain(
+            ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            assert self._config.cert_file is not None
+            assert self._config.key_file is not None
+            ctx.load_cert_chain(
                 self._config.cert_file, self._config.key_file)
+            ssl_context: Optional[SSLContext] = ctx
         else:
             ssl_context = None
         f = asyncio.start_server(
@@ -114,7 +124,7 @@ class NotificationServer:
             ssl=ssl_context)
         self._http_server = self._loop.run_until_complete(f)
 
-    def _change_socket_permissions(self):
+    def _change_socket_permissions(self) -> None:
         os.chmod(self._config.socket_file, self._config.socket_mode)
         if not self._config.socket_owner:
             new_owner = -1
@@ -137,7 +147,7 @@ class SocketHandler:
         self._loop = loop or asyncio.get_event_loop()
 
     @asyncio.coroutine
-    def handle(self, reader, _) -> Generator[str, None, None]:
+    def handle(self, reader: StreamReader, _: StreamWriter) -> Any:
         while True:
             try:
                 message = yield from read_json_line(reader)
@@ -150,7 +160,7 @@ class SocketHandler:
             else:
                 logging.warning("received unknown action '{}'".format(action))
 
-    def _notify_listeners_about_message(self, message):
+    def _notify_listeners_about_message(self, message: JsonValue) -> None:
         try:
             subsystem, event, data, id = self._get_event_data(message)
         except ValueError:
@@ -158,7 +168,8 @@ class SocketHandler:
         else:
             self._notify_listeners(subsystem, event, data, id)
 
-    def _notify_listeners(self, subsystem: str, event_type, data, id) -> None:
+    def _notify_listeners(self, subsystem: str, event_type: str,
+                          data: JsonValue, id: str) -> None:
         listeners = self._listeners[subsystem]
         # Copy the list of listeners, because it can be modified during the
         # iteration.
@@ -169,7 +180,7 @@ class SocketHandler:
                 len(listeners), event_type, subsystem))
 
     @staticmethod
-    def _get_event_data(message):
+    def _get_event_data(message: JsonValue) -> Tuple[str, str, JsonValue, str]:
         try:
             subsystem = json_get(message, "subsystem", str)
             event = json_get(message, "event", str)
@@ -183,14 +194,16 @@ class SocketHandler:
 
 class HTTPHandler:
 
-    def __init__(self, config: Config, listeners, stats, *, loop=None) -> None:
+    def __init__(self, config: Config, listeners: Dict[str, List["Listener"]],
+                 stats: "ServerStats", *, loop: AbstractEventLoop = None) \
+            -> None:
         self._config = config
         self._listeners = listeners
         self._stats = stats
         self._loop = loop or asyncio.get_event_loop()
 
     @asyncio.coroutine
-    def handle(self, reader, writer):
+    def handle(self, reader: StreamReader, writer: StreamWriter) -> Any:
         try:
             method, path, headers = yield from read_http_head(reader)
             yield from self._handle_request(
@@ -200,7 +213,9 @@ class HTTPHandler:
         writer.close()
 
     @asyncio.coroutine
-    def _handle_request(self, reader, writer, method, path, headers):
+    def _handle_request(self, reader: StreamReader, writer: StreamWriter,
+                        method: str, path: str, headers: Dict[str, str]) \
+            -> Any:
         url = urlparse(path)
         if url.path == "/events":
             if method != "GET":
@@ -220,7 +235,8 @@ class HTTPHandler:
         ]
 
     @asyncio.coroutine
-    def _handle_get_events(self, reader, writer, url, headers):
+    def _handle_get_events(self, reader: StreamReader, writer: StreamWriter,
+                           url: ParseResult, headers: Dict[str, str]) -> Any:
         subsystem, filters = self._parse_event_args(url.query)
         response_headers = self._default_headers() + [
             ("Transfer-Encoding", "chunked"),
@@ -238,14 +254,18 @@ class HTTPHandler:
             reader, writer, headers, subsystem, filters)
 
     @asyncio.coroutine
-    def _setup_listener(self, reader, writer, headers, subsystem, filters):
+    def _setup_listener(self, reader: StreamReader, writer: StreamWriter,
+                        headers: Dict[str, str], subsystem: str,
+                        filters: Sequence["Filter"]) -> Any:
         listener = self._create_listener(
             reader, writer, headers, subsystem, filters)
         self._listeners[subsystem].append(listener)
         self._stats.total_connections += 1
         yield from listener.ping_loop()
 
-    def _create_listener(self, reader, writer, headers, subsystem, filters):
+    def _create_listener(self, reader: StreamReader, writer: StreamWriter,
+                         headers: Mapping[str, str], subsystem: str,
+                         filters: Sequence["Filter"]) -> "Listener":
         logging.info("client subscribed to subsystem '{}'".format(subsystem))
         listener = Listener(
             self._config, reader, writer, subsystem, filters, loop=self._loop)
@@ -254,13 +274,13 @@ class HTTPHandler:
         listener.referer = headers.get("referer")
         return listener
 
-    def _remove_listener(self, listener):
+    def _remove_listener(self, listener: "Listener") -> None:
         logging.info(
             "client disconnected from subsystem '{}'".format(
                 listener.subsystem))
         self._listeners[listener.subsystem].remove(listener)
 
-    def _parse_event_args(self, query):
+    def _parse_event_args(self, query: str) -> Tuple[str, List["Filter"]]:
         args = parse_qs(query)
         if "subsystem" not in args:
             raise CGIArgumentError("subsystem", "missing argument")
@@ -271,14 +291,14 @@ class HTTPHandler:
         return args["subsystem"][0], filters
 
     @property
-    def _all_listeners(self):
+    def _all_listeners(self) -> List["Listener"]:
         all_listeners = []
         for key in self._listeners:
             all_listeners.extend(self._listeners[key])
         return all_listeners
 
-    def _handle_get_stats(self, writer):
-        j = json_stats(self._stats,self._all_listeners)
+    def _handle_get_stats(self, writer: StreamWriter) -> None:
+        j = json_stats(self._stats, self._all_listeners)
         response = json.dumps(j).encode("utf-8")
         response_headers = self._default_headers() + [
             ("Connection", "close"),
@@ -289,7 +309,7 @@ class HTTPHandler:
         writer.write(response)
         writer.close()
 
-    def disconnect_all(self):
+    def disconnect_all(self) -> None:
         for listener in self._all_listeners:
             listener.disconnect()
 
@@ -297,23 +317,24 @@ class HTTPHandler:
 class Listener:
 
     def __init__(
-            self, config: Config, reader, writer, subsystem, filters,
-            *, loop=None) -> None:
+            self, config: Config, reader: StreamReader, writer: StreamWriter,
+            subsystem: str, filters: Sequence["Filter"],
+            *, loop: AbstractEventLoop = None) -> None:
         self._config = config
         self.loop = loop or asyncio.get_event_loop()
         self.subsystem = subsystem
         self.filters = filters
         self.reader = reader
         self.writer = writer
-        self.on_close = None
+        self.on_close: Optional[Callable[[Listener], None]] = None
         self.connection_time = datetime.datetime.now()
-        self.remote_host = None
-        self.referer = None
+        self.remote_host: Optional[str] = None
+        self.referer: Optional[str] = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Listener 0x{:x} for {}>".format(id(self), self.subsystem)
 
-    def notify(self, event_type, data, id=None):
+    def notify(self, event_type: str, data: Any, id: str = None) -> None:
         if all(f(data) for f in self.filters):
             event = JSONEvent(event_type, data, id)
             try:
@@ -322,7 +343,7 @@ class Listener:
                 pass
 
     @asyncio.coroutine
-    def ping_loop(self):
+    def ping_loop(self) -> Any:
         while True:
             try:
                 self._write_event(PingEvent())
@@ -331,14 +352,14 @@ class Listener:
             yield from asyncio.sleep(
                 self._config.ping_interval, loop=self.loop)
 
-    def _write_event(self, event):
+    def _write_event(self, event: Event) -> None:
         if self.reader.at_eof():
             if self.on_close:
                 self.on_close(self)
             raise DisconnectedError()
         write_chunk(self.writer, bytes(event))
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         self.writer.close()
 
 
@@ -350,8 +371,8 @@ _comparators = {
 }
 
 
-def parse_filter(string):
-    def parse_value(v):
+def parse_filter(string: str) -> "Filter":
+    def parse_value(v: str) -> Union[str, int, datetime.date]:
         if len(v) >= 2 and v.startswith("'") and v.endswith("'"):
             return v[1:-1]
         try:
@@ -367,7 +388,7 @@ def parse_filter(string):
     comparator = _comparators[m.group(2)]
     value = parse_value(m.group(3))
     if type(value) == datetime.date:
-        cls = DateFilter
+        cls: Type[Filter] = DateFilter
     else:
         cls = Filter
     filter_ = cls(field, comparator, value)
@@ -377,23 +398,24 @@ def parse_filter(string):
 
 class Filter:
 
-    def __init__(self, field, comparator, value):
+    def __init__(self, field: str, comparator: _Comparator,
+                 value: Any) -> None:
         self._field = field
         self._comparator = comparator
         self._value = value
         self.string = ""
 
-    def __call__(self, message):
+    def __call__(self, message: JsonValue) -> bool:
         try:
             v = self._get_value(message)
         except ValueError:
             return False
         return self._comparator(v, self._value)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.string
 
-    def _get_value(self, message):
+    def _get_value(self, message: JsonValue) -> Any:
         try:
             v = json_get(message, self._field, self.field_type)
         except (ValueError, TypeError):
@@ -401,32 +423,33 @@ class Filter:
         return self.parse_value(v)
 
     @property
-    def field_type(self):
+    def field_type(self) -> JsonType:
         return type(self._value)
 
-    def parse_value(self, v):
+    def parse_value(self, v: str) -> Any:
         return v
 
 
 class DateFilter(Filter):
 
     @property
-    def field_type(self):
+    def field_type(self) -> type:
         return str
 
-    def parse_value(self, v):
+    def parse_value(self, v: str) -> datetime.date:
         return parse_iso_date(v)
 
 
 class ServerStats:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.start_time = datetime.datetime.now()
         self.total_connections = 0
 
 
-def json_stats(stats, listeners):
-    def json_connection(listener):
+def json_stats(stats: ServerStats, listeners: Sequence[Listener]) \
+        -> Dict[str, Any]:
+    def json_connection(listener: Listener) -> Dict[str, Any]:
         c = {
             "subsystem": listener.subsystem,
             "filters": [str(f) for f in listener.filters],

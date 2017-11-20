@@ -3,7 +3,7 @@ import argparse
 from evtstrd.config import *
 
 
-def parse_command_line():
+def parse_command_line() -> Config:
     parser = argparse.ArgumentParser(
         description="A simple event stream server.")
     parser.add_argument("-c", "--config-file", help="configuration file")

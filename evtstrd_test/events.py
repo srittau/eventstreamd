@@ -7,7 +7,7 @@ from evtstrd.events import Event, JSONEvent
 
 class EventTest(TestCase):
 
-    def test_str(self):
+    def test_str(self) -> None:
         event = Event("add", "test-data")
         string = str(event)
         assert_equal("event: add\r\ndata: test-data\r\n\r\n", string)
@@ -15,5 +15,5 @@ class EventTest(TestCase):
 
 class JSONEventTest(TestCase):
 
-    def test_exercise(self):
+    def test_exercise(self) -> None:
         JSONEvent("add", {})

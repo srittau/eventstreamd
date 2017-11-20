@@ -1,5 +1,6 @@
 import configparser
 from configparser import NoOptionError
+from typing import Optional
 
 DEFAULT_CONFIG = "/etc/eventstreamd.conf"
 
@@ -13,13 +14,13 @@ PING_INTERVAL = 20
 
 class Config:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.socket_file = SOCKET_NAME
-        self.socket_owner = None
-        self.socket_group = None
+        self.socket_owner: Optional[str] = None
+        self.socket_group: Optional[str] = None
         self.socket_mode = SOCKET_MODE
-        self.cert_file = None
-        self.key_file = None
+        self.cert_file: Optional[str] = None
+        self.key_file: Optional[str] = None
         self.http_port = HTTP_PORT
         self.ping_interval = PING_INTERVAL
 
@@ -28,7 +29,7 @@ class Config:
         return bool(self.cert_file) and bool(self.key_file)
 
 
-def read_config(filename):
+def read_config(filename: str) -> Config:
     config = Config()
     parser = configparser.ConfigParser()
     with open(filename, "r") as f:
@@ -54,7 +55,7 @@ def read_config(filename):
     return config
 
 
-def read_default_config():
+def read_default_config() -> Config:
     try:
         return read_config(DEFAULT_CONFIG)
     except FileNotFoundError:

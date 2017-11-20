@@ -5,7 +5,7 @@ import re
 _iso_date_re = re.compile(r"^(\d\d\d\d)-?(\d\d)-?(\d\d)$")
 
 
-def parse_iso_date(date_string):
+def parse_iso_date(date_string: str) -> datetime.date:
     if not date_string:
         raise ValueError(f"invalid date '{date_string}'")
     m = _iso_date_re.match(date_string)

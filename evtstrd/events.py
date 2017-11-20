@@ -1,7 +1,8 @@
 import json
+from typing import Any, SupportsBytes
 
 
-class Event:
+class Event(SupportsBytes):
 
     """A single event stream event.
 
@@ -10,16 +11,17 @@ class Event:
     to allow safe stream reconnections.
     """
 
-    def __init__(self, event_type, data="", id=None):
+    def __init__(self, event_type: str, data: str = "", id: str = None) \
+            -> None:
         self.type = event_type
         self.id = id
         self.data = data
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         """Serialize the event for use in event streams."""
         return bytes(str(self), "utf-8")
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Serialize the event for use in event streams."""
         fields = [
             ("event", self.type),
@@ -33,13 +35,14 @@ class Event:
 
 class PingEvent(Event):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("ping")
 
 
 class JSONEvent(Event):
 
-    def __init__(self, event_type, json_data, id=None):
+    def __init__(self, event_type: str, json_data: Any, id: str = None) \
+            -> None:
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)
         super().__init__(event_type, json_data, id)
