@@ -15,6 +15,6 @@ distributed to all interested listeners via HTTP event streams.
 
 Docker image available:
 
-```
-docker pull srittau/eventstreamd
-```
+.. code:: bash
+
+    docker pull srittau/eventstreamd
