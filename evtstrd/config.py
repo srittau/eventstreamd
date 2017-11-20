@@ -23,6 +23,7 @@ class Config:
         self.key_file: Optional[str] = None
         self.http_port = HTTP_PORT
         self.ping_interval = PING_INTERVAL
+        self.debug = False
 
     @property
     def with_ssl(self) -> bool:

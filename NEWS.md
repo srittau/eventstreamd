@@ -1,6 +1,11 @@
 Changes in eventstreamd 0.5.2
 =============================
 
+Improvements
+------------
+
+* Add a debug mode, enabled with the `-d` command line flag.
+
 Changes in eventstreamd 0.5.1
 =============================
 
