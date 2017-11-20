@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name="eventstreamd",
-    version="0.5.2",
+    version="0.5.3",
     description="Simple Event Stream Server",
     long_description=read("README.rst"),
     author="Sebastian Rittau",
