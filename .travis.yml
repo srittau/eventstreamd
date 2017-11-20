@@ -2,4 +2,6 @@ language: python
 python:
   - "3.6"
 install: pip install -r requirements.txt
-script: python -Wall -m unittest discover -t . -s evtstrd_test -p "*.py"
+script:
+  - python -Wall -m unittest discover -t . -s evtstrd_test -p "*.py"
+  - mypy evtstrd evtstrd_test
