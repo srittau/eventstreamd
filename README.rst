@@ -1,8 +1,12 @@
 eventstreamd
 ============
 
+.. image:: https://img.shields.io/pypi/l/eventstreamd.svg
+   :target: https://pypi.python.org/pypi/eventstreamd/
 .. image:: https://img.shields.io/github/release/srittau/eventstreamd/all.svg
    :target: https://github.com/srittau/eventstreamd/releases/
+.. image:: https://img.shields.io/pypi/v/eventstreamd.svg
+   :target: https://pypi.python.org/pypi/eventstreamd/
 .. image:: https://travis-ci.org/srittau/eventstreamd.svg?branch=master
    :target: https://travis-ci.org/srittau/eventstreamd
 
