@@ -4,6 +4,7 @@ Changes in eventstreamd 0.5.3
 Improvements
 ------------
 
+* Improved log output.
 * Improved debug mode output.
 
 Docker

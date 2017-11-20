@@ -267,9 +267,16 @@ class HTTPHandler:
         listener.on_close = self._remove_listener
         listener.remote_host = writer.get_extra_info("peername")[0]
         listener.referer = headers.get("referer")
-        logging.info(
-            f"client {listener} subscribed to subsystem '{subsystem}'")
+        self._log_listener_created(listener)
         return listener
+
+    def _log_listener_created(self, listener: "Listener") -> None:
+        msg = f"client {listener} subscribed to subsystem " \
+              f"'{listener.subsystem}'"
+        if listener.filters:
+            filter_str = ', '.join(str(f) for f in listener.filters)
+            msg += f" with filters {filter_str}"
+        logging.info(msg)
 
     def _remove_listener(self, listener: "Listener") -> None:
         logging.info(f"client {listener} disconnected from subsystem "
