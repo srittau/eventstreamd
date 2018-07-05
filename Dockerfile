@@ -1,10 +1,10 @@
-FROM python:3.6-stretch
+FROM python:3.7-stretch
 
 # Prepare virtualenv
 RUN mkdir /app
 WORKDIR /app
 RUN mkdir ./run
-RUN python3.6 -m venv ./virtualenv
+RUN python3.7 -m venv ./virtualenv
 RUN ./virtualenv/bin/pip install --upgrade pip setuptools
 
 # Install dependencies
