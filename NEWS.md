@@ -4,6 +4,10 @@
 
 * Drop Python 3.6 support.
 
+## Improvements
+
+* Correctly identify as `eventstreamd` in the `Server` HTTP header.
+
 # Changes in eventstreamd 0.5.4
 
 ## Improvements

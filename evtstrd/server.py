@@ -258,10 +258,7 @@ class HTTPHandler:
             raise NotFoundError(path)
 
     def _default_headers(self) -> List[Header]:
-        return [
-            ("Date", formatdate(usegmt=True)),
-            ("Server", "zzb-notificationd"),
-        ]
+        return [("Date", formatdate(usegmt=True)), ("Server", "eventstreamd")]
 
     async def _handle_get_events(
         self,
