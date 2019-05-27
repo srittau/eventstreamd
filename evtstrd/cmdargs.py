@@ -5,14 +5,16 @@ from evtstrd.config import *
 
 def parse_command_line() -> Config:
     parser = argparse.ArgumentParser(
-        description="A simple event stream server.")
+        description="A simple event stream server."
+    )
     parser.add_argument("-c", "--config-file", help="configuration file")
     parser.add_argument("-s", "--socket", help="socket file")
     parser.add_argument("--ssl-key", help="SSL key file")
     parser.add_argument("--ssl-cert", help="SSL certificate file")
     parser.add_argument("-p", "--port", help="HTTP port", type=int)
-    parser.add_argument("-d", "--debug", help="enable debug mode",
-                        action="store_true")
+    parser.add_argument(
+        "-d", "--debug", help="enable debug mode", action="store_true"
+    )
     args = parser.parse_args()
     if args.config_file is not None:
         config = read_config(args.config_file)

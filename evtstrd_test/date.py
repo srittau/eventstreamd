@@ -7,7 +7,6 @@ from evtstrd.date import parse_iso_date
 
 
 class ParseISODateTest(TestCase):
-
     def test_empty(self) -> None:
         with assert_raises_regex(ValueError, "invalid date ''"):
             parse_iso_date("")

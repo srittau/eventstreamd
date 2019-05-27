@@ -6,7 +6,6 @@ from evtstrd.server import parse_filter
 
 
 class ParseFilterTest(TestCase):
-
     def test_invalid_filter(self) -> None:
         with assert_raises(ValueError):
             parse_filter("INVALID")

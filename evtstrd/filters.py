@@ -11,8 +11,9 @@ _Comparator = Callable[[str, Any], bool]
 
 
 class Filter:
-    def __init__(self, field: str, comparator: _Comparator,
-                 value: Any, string: str) -> None:
+    def __init__(
+        self, field: str, comparator: _Comparator, value: Any, string: str
+    ) -> None:
         self._field = field
         self._comparator = comparator
         self._value = value
@@ -44,7 +45,6 @@ class Filter:
 
 
 class StringFilter(Filter):
-
     @property
     def field_type(self) -> JsonType:
         return type(self._value)
@@ -54,7 +54,6 @@ class StringFilter(Filter):
 
 
 class DateFilter(Filter):
-
     @property
     def field_type(self) -> Type[str]:
         return str

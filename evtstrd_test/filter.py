@@ -6,7 +6,6 @@ from evtstrd.filters import parse_filter
 
 
 class FilterTest(TestCase):
-
     def test_str(self) -> None:
         filter_ = parse_filter("foo.bar<='ABC'")
         assert_equal("foo.bar<='ABC'", str(filter_))

@@ -13,7 +13,6 @@ PING_INTERVAL = 20
 
 
 class Config:
-
     def __init__(self) -> None:
         self.socket_file = SOCKET_NAME
         self.socket_owner: Optional[str] = None
@@ -36,23 +35,23 @@ def read_config(filename: str) -> Config:
     with open(filename, "r") as f:
         parser.read_file(f)
         config.socket_file = parser.get(
-            "General", "SocketFile", fallback=SOCKET_NAME)
+            "General", "SocketFile", fallback=SOCKET_NAME
+        )
         try:
             socket_mode = parser.get("General", "SocketMode")
         except NoOptionError:
             pass
         else:
             config.socket_mode = int(socket_mode, base=8)
-        config.socket_owner = parser.get(
-            "General", "SocketOwner", fallback="")
-        config.socket_group = parser.get(
-            "General", "SocketGroup", fallback="")
+        config.socket_owner = parser.get("General", "SocketOwner", fallback="")
+        config.socket_group = parser.get("General", "SocketGroup", fallback="")
         config.cert_file = parser.get(
-            "General", "SSLCertificateFile", fallback="")
-        config.key_file = parser.get(
-            "General", "SSLKeyFile", fallback="")
+            "General", "SSLCertificateFile", fallback=""
+        )
+        config.key_file = parser.get("General", "SSLKeyFile", fallback="")
         config.http_port = parser.getint(
-            "General", "HTTPPort", fallback=HTTP_PORT)
+            "General", "HTTPPort", fallback=HTTP_PORT
+        )
     return config
 
 

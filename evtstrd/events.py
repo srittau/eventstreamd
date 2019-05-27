@@ -11,8 +11,9 @@ class Event(SupportsBytes):
     to allow safe stream reconnections.
     """
 
-    def __init__(self, event_type: str, data: str = "", id: str = None) \
-            -> None:
+    def __init__(
+        self, event_type: str, data: str = "", id: str = None
+    ) -> None:
         self.type = event_type
         self.id = id
         self.data = data
@@ -23,10 +24,7 @@ class Event(SupportsBytes):
 
     def __str__(self) -> str:
         """Serialize the event for use in event streams."""
-        fields = [
-            ("event", self.type),
-            ("data", self.data),
-        ]
+        fields = [("event", self.type), ("data", self.data)]
         if self.id:
             fields.append(("id", self.id))
         lines = ["{}: {}".format(f[0], f[1]) for f in fields]
@@ -34,15 +32,14 @@ class Event(SupportsBytes):
 
 
 class PingEvent(Event):
-
     def __init__(self) -> None:
         super().__init__("ping")
 
 
 class JSONEvent(Event):
-
-    def __init__(self, event_type: str, json_data: Any, id: str = None) \
-            -> None:
+    def __init__(
+        self, event_type: str, json_data: Any, id: str = None
+    ) -> None:
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)
         super().__init__(event_type, json_data, id)
