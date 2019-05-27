@@ -12,7 +12,7 @@ COPY ./requirements.txt .
 RUN ./virtualenv/bin/pip install -r requirements.txt
 
 # Install application
-COPY README.rst setup.py ./
+COPY README.md setup.py ./
 COPY bin/ ./bin
 COPY evtstrd/ ./evtstrd
 COPY evtstrd_test/ ./evtstrd_test
