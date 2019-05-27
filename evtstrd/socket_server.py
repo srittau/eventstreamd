@@ -15,27 +15,24 @@ from asyncio import (
 from grp import getgrnam
 from pwd import getpwnam
 from types import TracebackType
-from typing import Any, Type, Optional, Generator, Tuple, Mapping, Sequence
+from typing import Any, Type, Optional, Generator, Tuple
 
 from jsonget import json_get, JsonValue
 
 from evtstrd.config import Config
+from evtstrd.dispatcher import Dispatcher
 from evtstrd.exc import ServerAlreadyRunningError, DisconnectedError
-from evtstrd.listener import Listener
 from evtstrd.util import read_json_line
 
 
 class SocketServer:
     def __init__(
-        self,
-        loop: AbstractEventLoop,
-        config: Config,
-        listeners: Mapping[str, Sequence[Listener]],
+        self, loop: AbstractEventLoop, config: Config, dispatcher: Dispatcher
     ) -> None:
         self._loop = loop
         self._config = config
         self._filename = config.socket_file
-        self._socket_handler = SocketHandler(listeners, loop=loop)
+        self._socket_handler = SocketHandler(dispatcher, loop=loop)
         self._server: Optional[AbstractServer] = None
 
     def __enter__(self) -> None:
@@ -93,12 +90,9 @@ class SocketServer:
 
 class SocketHandler:
     def __init__(
-        self,
-        listeners: Mapping[str, Sequence[Listener]],
-        *,
-        loop: AbstractEventLoop = None,
+        self, dispatcher: Dispatcher, *, loop: AbstractEventLoop = None
     ) -> None:
-        self._listeners = listeners
+        self._dispatcher = dispatcher
         self._loop = loop or get_event_loop()
 
     async def handle(self, reader: StreamReader, _: StreamWriter) -> None:
@@ -109,30 +103,17 @@ class SocketHandler:
                 break
             action = json_get(message, "action", str)
             if action == "notify":
-                self._notify_listeners_about_message(message)
+                self._notify_dispatcher(message)
             else:
                 logging.warning(f"received unknown action '{action}'")
 
-    def _notify_listeners_about_message(self, message: JsonValue) -> None:
+    def _notify_dispatcher(self, message: JsonValue) -> None:
         try:
             subsystem, event, data, id = self._get_event_data(message)
         except ValueError:
             pass
         else:
-            self._notify_listeners(subsystem, event, data, id)
-
-    def _notify_listeners(
-        self, subsystem: str, event_type: str, data: JsonValue, id: str
-    ) -> None:
-        listeners = self._listeners[subsystem]
-        # Copy the list of listeners, because it can be modified during the
-        # iteration.
-        for listener in listeners[:]:
-            listener.notify(event_type, data, id)
-        logging.info(
-            f"notified {len(listeners)} listeners about '{event_type}' event "
-            f"in subsystem '{subsystem}'"
-        )
+            self._dispatcher.notify(subsystem, event, data, id)
 
     @staticmethod
     def _get_event_data(message: JsonValue) -> Tuple[str, str, JsonValue, str]:

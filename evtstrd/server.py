@@ -1,25 +1,24 @@
 from __future__ import annotations
 
-import asyncio
-import asyncio.log
 import signal
-from asyncio import AbstractEventLoop
-from collections import defaultdict
-from typing import List, Dict
+from asyncio import AbstractEventLoop, get_event_loop
 
 from evtstrd.config import Config
+from evtstrd.dispatcher import Dispatcher
 from evtstrd.http_server import HTTPServer
-from evtstrd.listener import Listener
 from evtstrd.socket_server import SocketServer
+from evtstrd.stats import ServerStats
 
 
 def run_server(config: Config) -> None:
-    listeners: Dict[str, List[Listener]] = defaultdict(list)
-    loop = asyncio.get_event_loop()
+    loop = get_event_loop()
     _setup_signal_handlers(loop)
-    with SocketServer(loop, config, listeners):
-        with HTTPServer(loop, config, listeners):
+    stats = ServerStats()
+    dispatcher = Dispatcher(loop, config, stats)
+    with SocketServer(loop, config, dispatcher):
+        with HTTPServer(loop, config, dispatcher, stats):
             loop.run_forever()
+            dispatcher.disconnect_all()
     loop.run_until_complete(loop.shutdown_asyncgens())
     loop.close()
 

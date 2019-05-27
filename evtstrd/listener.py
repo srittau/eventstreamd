@@ -3,7 +3,7 @@ import datetime
 import itertools
 import logging
 from asyncio import AbstractEventLoop, StreamReader, StreamWriter
-from typing import Sequence, Optional, Callable, Any
+from typing import Sequence, Optional, Callable, Any, cast
 
 from evtstrd.config import Config
 from evtstrd.events import JSONEvent, PingEvent, Event
@@ -34,7 +34,6 @@ class Listener:
         self.writer = writer
         self.on_close: Optional[Callable[[Listener], None]] = None
         self.connection_time = datetime.datetime.now()
-        self.remote_host: Optional[str] = None
         self.referer: Optional[str] = None
 
     def __str__(self) -> str:
@@ -42,6 +41,10 @@ class Listener:
 
     def __repr__(self) -> str:
         return "<Listener 0x{:x} for {}>".format(id(self), self.subsystem)
+
+    @property
+    def remote_host(self) -> Optional[str]:
+        return cast(Optional[str], self.writer.get_extra_info("peername")[0])
 
     def notify(self, event_type: str, data: Any, id: str = None) -> None:
         if all(f(data) for f in self.filters):
