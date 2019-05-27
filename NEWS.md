@@ -1,3 +1,9 @@
+# Changes in eventstreamd 0.6.0
+
+## Incompatible Changes
+
+* Drop Python 3.6 support.
+
 # Changes in eventstreamd 0.5.4
 
 ## Improvements
