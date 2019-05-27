@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import Callable, Union, Type, Any
+from typing import Callable, Union, Type, Any, cast
 
 from jsonget import json_get, JsonValue, JsonType
 
@@ -11,7 +11,6 @@ _Comparator = Callable[[str, Any], bool]
 
 
 class Filter:
-
     def __init__(self, field: str, comparator: _Comparator,
                  value: Any, string: str) -> None:
         self._field = field
@@ -34,7 +33,7 @@ class Filter:
             v = json_get(message, self._field, self.field_type)
         except (ValueError, TypeError):
             raise ValueError()
-        return self.parse_value(v)
+        return self.parse_value(cast(Any, v))
 
     @property
     def field_type(self) -> JsonType:

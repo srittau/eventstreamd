@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import asyncio.log
 import datetime
@@ -8,6 +10,7 @@ import ssl
 import logging
 import os
 import sys
+from asyncio import AbstractServer
 from asyncio.events import AbstractEventLoop
 from asyncio.streams import StreamReader, StreamWriter
 from collections import defaultdict
@@ -46,8 +49,8 @@ class NotificationServer:
 
     def __init__(self, config: Config) -> None:
         self._config = config
-        self._http_server = None
-        self._socket_server = None
+        self._http_server: Optional[AbstractServer] = None
+        self._socket_server: Optional[AbstractServer] = None
         self._loop = asyncio.get_event_loop()
         self._listeners: Dict[str, List[Listener]] = defaultdict(list)
         self._stats = ServerStats()
