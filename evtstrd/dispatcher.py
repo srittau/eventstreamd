@@ -1,5 +1,12 @@
+import asyncio
+import datetime
 import logging
-from asyncio import AbstractEventLoop, StreamReader, StreamWriter
+from asyncio import (
+    AbstractEventLoop,
+    StreamReader,
+    StreamWriter,
+    FIRST_COMPLETED,
+)
 from collections import defaultdict
 from typing import List, Dict, Optional, Sequence
 
@@ -27,14 +34,29 @@ class Dispatcher:
             all_listeners.extend(self._listeners[key])
         return all_listeners
 
-    async def initialize_listener(
+    async def handle_listener(
         self,
         reader: StreamReader,
         writer: StreamWriter,
         referer: Optional[str],
         subsystem: str,
         filters: Sequence[Filter],
+        *,
+        expire: Optional[datetime.datetime] = None,
     ) -> None:
+        listener = self._setup_listener(
+            reader, writer, referer, subsystem, filters
+        )
+        await self._run_listener(listener, expire)
+
+    def _setup_listener(
+        self,
+        reader: StreamReader,
+        writer: StreamWriter,
+        referer: Optional[str],
+        subsystem: str,
+        filters: Sequence[Filter],
+    ) -> Listener:
         listener = Listener(
             self._config, reader, writer, subsystem, filters, loop=self._loop
         )
@@ -43,7 +65,7 @@ class Dispatcher:
         self._listeners[subsystem].append(listener)
         self._stats.total_connections += 1
         self._log_listener_added(listener)
-        await listener.ping_loop()
+        return listener
 
     def _log_listener_added(self, listener: Listener) -> None:
         msg = (
@@ -61,6 +83,18 @@ class Dispatcher:
             f"client {listener} disconnected from subsystem "
             f"'{listener.subsystem}'"
         )
+
+    async def _run_listener(
+        self, listener: Listener, expire: Optional[datetime.datetime]
+    ) -> None:
+        futures = [asyncio.ensure_future(listener.ping_loop())]
+        if expire:
+            futures.append(asyncio.ensure_future(listener.logout_at(expire)))
+        await asyncio.wait(futures, return_when=FIRST_COMPLETED)
+        for f in futures:
+            f.cancel()
+
+        listener.disconnect()
 
     def notify(
         self, subsystem: str, event_type: str, data: JsonValue, id: str

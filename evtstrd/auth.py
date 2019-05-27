@@ -1,5 +1,6 @@
+import datetime
 from http import HTTPStatus
-from typing import Any, Mapping
+from typing import Any, Mapping, Tuple, Optional
 
 from evtstrd.exc import PluginError
 from evtstrd.http import HTTPError
@@ -8,14 +9,15 @@ from evtstrd.plugins import load_plugin
 
 async def check_auth(
     path: str, headers: Mapping[str, str], **kwargs: Any
-) -> Any:
+) -> Tuple[Optional[datetime.datetime], Any]:
     auth = load_plugin("auth", "check_auth")
     if auth is None:
-        return None
+        return None, None
     response = await auth(path, headers, **kwargs)
     status = response["status"]
     if status == "ok":
-        return response.get("data")
+        expire: Optional[datetime.datetime] = response.get("expire")
+        return expire, response.get("data")
     elif status == "unauthorized":
         authenticate = response.get("authenticate")
         if authenticate is None:

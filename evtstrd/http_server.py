@@ -138,7 +138,7 @@ class HTTPHandler:
         headers: Mapping[str, str],
     ) -> None:
         subsystem, filters = self._parse_event_args(url.query)
-        await check_auth("events", headers, subsystem=subsystem)
+        expire, data = await check_auth("events", headers, subsystem=subsystem)
         response_headers = self._default_headers() + [
             ("Transfer-Encoding", "chunked"),
             ("Content-Type", "text/event-stream"),
@@ -154,8 +154,8 @@ class HTTPHandler:
             )
         write_http_head(writer, HTTPStatus.OK, response_headers)
         referer = headers.get("referer")
-        await self._dispatcher.initialize_listener(
-            reader, writer, referer, subsystem, filters
+        await self._dispatcher.handle_listener(
+            reader, writer, referer, subsystem, filters, expire=expire
         )
 
     def _parse_event_args(self, query: str) -> Tuple[str, List[Filter]]:

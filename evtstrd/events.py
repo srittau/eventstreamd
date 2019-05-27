@@ -43,3 +43,8 @@ class JSONEvent(Event):
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)
         super().__init__(event_type, json_data, id)
+
+
+class LogoutEvent(JSONEvent):
+    def __init__(self) -> None:
+        super().__init__("logout", {"reason": "expire"})

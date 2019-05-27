@@ -6,10 +6,11 @@ from asyncio import AbstractEventLoop, StreamReader, StreamWriter
 from typing import Sequence, Optional, Callable, Any, cast
 
 from evtstrd.config import Config
-from evtstrd.events import JSONEvent, PingEvent, Event
+from evtstrd.events import JSONEvent, PingEvent, Event, LogoutEvent
 from evtstrd.exc import DisconnectedError
 from evtstrd.filters import Filter
-from evtstrd.http import write_chunk
+from evtstrd.http import write_chunk, write_last_chunk
+from evtstrd.util import sleep_until
 
 
 class Listener:
@@ -65,6 +66,12 @@ class Listener:
                 break
             await asyncio.sleep(self._config.ping_interval, loop=self.loop)
 
+    async def logout_at(self, time: datetime.datetime) -> None:
+        await sleep_until(time)
+        self._write_event(LogoutEvent())
+        if self.on_close:
+            self.on_close(self)
+
     def _write_event(self, event: Event) -> None:
         if self.reader.at_eof():
             if self.on_close:
@@ -73,4 +80,5 @@ class Listener:
         write_chunk(self.writer, bytes(event))
 
     def disconnect(self) -> None:
+        write_last_chunk(self.writer)
         self.writer.close()

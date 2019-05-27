@@ -29,5 +29,8 @@ async def check_auth(route, headers, **kwargs): ...
     * `status` (required) - Either of `"ok"`, `"unauthorized"`, or `"forbidden"`.
     * `authenticate` (required if status is `"unauthorized"`) - content
       of the `WWW-Authenticate` header returned to the client
+    * `expire` (optional) - If status is `"ok"` and this is not `None`,
+      will send a `logout` event when this time is reached. Must be
+      a `datetime` object without timezone or timezone set to UTC.
 
   Unknown fields are ignored.

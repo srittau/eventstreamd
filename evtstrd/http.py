@@ -121,3 +121,7 @@ def write_chunk(writer: StreamWriter, data: bytes) -> None:
         .replace("\n", "\\n")
     )
     logging.debug(f"wrote chunk to listener: {encoded}")
+
+
+def write_last_chunk(writer: StreamWriter) -> None:
+    write_chunk(writer, b"")

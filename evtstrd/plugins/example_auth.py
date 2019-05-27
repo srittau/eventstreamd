@@ -1,3 +1,5 @@
+import datetime
+from datetime import timedelta
 from typing import Any, Mapping
 
 
@@ -13,6 +15,9 @@ async def check_auth(
     if authorization is None:
         return {"status": "unauthorized", "authenticate": "Bearer"}
     if authorization.lower() == "bearer sikrit":
-        return {"status": "ok"}
+        return {
+            "status": "ok",
+            "expire": datetime.datetime.utcnow() + timedelta(minutes=1),
+        }
     else:
         return {"status": "forbidden"}
