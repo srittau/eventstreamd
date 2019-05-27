@@ -1,6 +1,6 @@
 import argparse
 
-from evtstrd.config import *
+from evtstrd.config import Config, read_config, read_default_config
 
 
 def parse_command_line() -> Config:
