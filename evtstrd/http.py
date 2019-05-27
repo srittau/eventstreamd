@@ -7,10 +7,16 @@ Header = Tuple[str, str]
 
 
 class HTTPError(Exception):
-    def __init__(self, status: HTTPStatus, message: str) -> None:
+    def __init__(
+        self,
+        status: HTTPStatus,
+        message: str,
+        *,
+        headers: Iterable[Header] = [],
+    ) -> None:
         super().__init__(message)
         self.status = status
-        self.headers: List[Header] = []
+        self.headers: List[Header] = list(headers)
 
 
 class BadRequestError(HTTPError):
@@ -89,10 +95,19 @@ def write_http_head(
     writer.write(b"\r\n")
 
 
+def write_response(
+    writer: StreamWriter,
+    status: HTTPStatus,
+    headers: Iterable[Header],
+    body: str,
+) -> None:
+    write_http_head(writer, status, headers)
+    writer.write(body.encode("utf-8"))
+
+
 def write_http_error(writer: StreamWriter, exc: HTTPError) -> None:
-    write_http_head(writer, exc.status, exc.headers)
-    writer.write(bytes(str(exc), "utf-8"))
-    writer.write(b"\r\n")
+    body = str(exc) + "\r\n"
+    write_response(writer, exc.status, exc.headers, body)
 
 
 def write_chunk(writer: StreamWriter, data: bytes) -> None:

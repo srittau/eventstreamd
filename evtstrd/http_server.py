@@ -26,6 +26,7 @@ from typing import (
 )
 from urllib.parse import urlparse, ParseResult, parse_qs
 
+from evtstrd.auth import check_auth
 from evtstrd.config import Config
 from evtstrd.filters import Filter, parse_filter
 from evtstrd.http import (
@@ -37,6 +38,7 @@ from evtstrd.http import (
     Header,
     write_http_head,
     CGIArgumentError,
+    write_response,
 )
 from evtstrd.listener import Listener
 from evtstrd.stats import ServerStats, json_stats
@@ -103,6 +105,14 @@ class HTTPHandler:
             await self._handle_request(reader, writer, method, path, headers)
         except HTTPError as exc:
             write_http_error(writer, exc)
+        except Exception as exc:
+            logging.exception(exc)
+            write_response(
+                writer,
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+                [],
+                "Internal Server Error\r\n",
+            )
         writer.close()
 
     async def _handle_request(
@@ -121,7 +131,7 @@ class HTTPHandler:
         elif url.path == "/stats":
             if method != "GET":
                 raise MethodNotAllowedError(method)
-            self._handle_get_stats(writer)
+            await self._handle_get_stats(writer, headers)
         else:
             raise NotFoundError(path)
 
@@ -133,9 +143,10 @@ class HTTPHandler:
         reader: StreamReader,
         writer: StreamWriter,
         url: ParseResult,
-        headers: Dict[str, str],
+        headers: Mapping[str, str],
     ) -> None:
         subsystem, filters = self._parse_event_args(url.query)
+        await check_auth("events", headers, subsystem=subsystem)
         response_headers = self._default_headers() + [
             ("Transfer-Encoding", "chunked"),
             ("Content-Type", "text/event-stream"),
@@ -156,7 +167,7 @@ class HTTPHandler:
         self,
         reader: StreamReader,
         writer: StreamWriter,
-        headers: Dict[str, str],
+        headers: Mapping[str, str],
         subsystem: str,
         filters: Sequence[Filter],
     ) -> None:
@@ -218,7 +229,10 @@ class HTTPHandler:
             all_listeners.extend(self._listeners[key])
         return all_listeners
 
-    def _handle_get_stats(self, writer: StreamWriter) -> None:
+    async def _handle_get_stats(
+        self, writer: StreamWriter, headers: Mapping[str, str]
+    ) -> None:
+        await check_auth("stats", headers)
         j = json_stats(self._stats, self._all_listeners)
         response = json.dumps(j).encode("utf-8")
         response_headers = self._default_headers() + [

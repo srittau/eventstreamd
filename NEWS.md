@@ -4,6 +4,10 @@
 
 * Drop Python 3.6 support.
 
+## New Features
+
+* Add support for authorization plugins.
+
 ## Improvements
 
 * Correctly identify as `eventstreamd` in the `Server` HTTP header.
