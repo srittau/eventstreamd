@@ -162,7 +162,7 @@ class NotificationServer:
 class SocketHandler:
     def __init__(
         self,
-        listeners: Dict[str, List["Listener"]],
+        listeners: Dict[str, List[Listener]],
         *,
         loop: AbstractEventLoop = None,
     ) -> None:
@@ -219,8 +219,8 @@ class HTTPHandler:
     def __init__(
         self,
         config: Config,
-        listeners: Dict[str, List["Listener"]],
-        stats: "ServerStats",
+        listeners: Dict[str, List[Listener]],
+        stats: ServerStats,
         *,
         loop: AbstractEventLoop = None,
     ) -> None:
@@ -309,7 +309,7 @@ class HTTPHandler:
         headers: Mapping[str, str],
         subsystem: str,
         filters: Sequence[Filter],
-    ) -> "Listener":
+    ) -> Listener:
         listener = Listener(
             self._config, reader, writer, subsystem, filters, loop=self._loop
         )
@@ -319,7 +319,7 @@ class HTTPHandler:
         self._log_listener_created(listener)
         return listener
 
-    def _log_listener_created(self, listener: "Listener") -> None:
+    def _log_listener_created(self, listener: Listener) -> None:
         msg = (
             f"client {listener} subscribed to subsystem "
             f"'{listener.subsystem}'"
@@ -329,7 +329,7 @@ class HTTPHandler:
             msg += f" with filters {filter_str}"
         logging.info(msg)
 
-    def _remove_listener(self, listener: "Listener") -> None:
+    def _remove_listener(self, listener: Listener) -> None:
         logging.info(
             f"client {listener} disconnected from subsystem "
             f"'{listener.subsystem}'"
@@ -347,7 +347,7 @@ class HTTPHandler:
         return args["subsystem"][0], filters
 
     @property
-    def _all_listeners(self) -> List["Listener"]:
+    def _all_listeners(self) -> List[Listener]:
         all_listeners = []
         for key in self._listeners:
             all_listeners.extend(self._listeners[key])
