@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os.path
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def read(fname):
@@ -17,7 +17,7 @@ setup(
     author="Sebastian Rittau",
     author_email="srittau@rittau.biz",
     url="https://github.com/srittau/eventstreamd",
-    packages=["evtstrd", "evtstrd_test"],
+    packages=find_packages(),
     scripts=[os.path.join("bin", "eventstreamd")],
     tests_require=["asserts >= 0.6"],
     license="MIT",

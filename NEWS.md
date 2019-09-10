@@ -1,3 +1,9 @@
+# Changes in eventstreamd 0.6.1
+
+## Bug Fixes
+
+* Correctly install subpackage ``evtstrd.plugins``.
+
 # Changes in eventstreamd 0.6.0
 
 ## Incompatible Changes
