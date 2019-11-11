@@ -1,6 +1,6 @@
 # Explicit dependencies
 asserts==0.10.0
-flake8==3.7.8
+flake8==3.7.9
 json-get==1.1.1
 mypy==0.720
 wheel==0.33.6
