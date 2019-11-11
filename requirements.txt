@@ -1,5 +1,5 @@
 # Explicit dependencies
-asserts==0.9.1
+asserts==0.10.0
 flake8==3.7.8
 json-get==1.1.1
 mypy==0.720
