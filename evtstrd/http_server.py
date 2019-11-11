@@ -69,12 +69,11 @@ class HTTPServer:
         exc_type: Type[BaseException],
         exc_val: BaseException,
         exc_tb: TracebackType,
-    ) -> bool:
+    ) -> None:
         assert self._server is not None
         self._server.close()
         hs = self._server.wait_closed()
         self._loop.run_until_complete(asyncio.wait([hs], timeout=5))
-        return False
 
 
 class HTTPHandler:

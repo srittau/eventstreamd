@@ -12,7 +12,7 @@ async def read_json_line(reader: StreamReader) -> Any:
     while True:
         line = await reader.readline()
         if line:
-            logging.debug(f"read line from socket: {line}")
+            logging.debug(f"read line from socket: {line!r}")
             try:
                 return json.loads(line.decode("utf-8").strip())
             except (ValueError, UnicodeDecodeError):

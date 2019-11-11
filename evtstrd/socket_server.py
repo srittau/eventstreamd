@@ -46,7 +46,7 @@ class SocketServer:
         exc_type: Optional[Type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
-    ) -> bool:
+    ) -> None:
         assert self._server is not None
         self._server.close()
         wc = self._server.wait_closed()
@@ -55,7 +55,6 @@ class SocketServer:
             os.remove(self._filename)
         except FileNotFoundError:
             pass
-        return False
 
     def _remove_stale_socket(self) -> None:
         if not os.path.exists(self._filename):
