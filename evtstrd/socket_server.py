@@ -15,7 +15,7 @@ from asyncio import (
 from grp import getgrnam
 from pwd import getpwnam
 from types import TracebackType
-from typing import Any, Type, Optional, Generator, Tuple
+from typing import Any, Coroutine, Type, Optional, Tuple
 
 from jsonget import json_get, JsonValue
 
@@ -81,7 +81,7 @@ class SocketServer:
         if new_owner != -1 or new_group != -1:
             os.chown(self._filename, new_owner, new_group)
 
-    def close(self) -> Generator[Any, None, None]:
+    def close(self) -> Coroutine[Any, Any, None]:
         assert self._server is not None
         self._server.close()
         return self._server.wait_closed()
