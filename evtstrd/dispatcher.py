@@ -90,9 +90,7 @@ class Dispatcher:
         futures = [asyncio.ensure_future(listener.ping_loop())]
         if expire:
             futures.append(asyncio.ensure_future(listener.logout_at(expire)))
-        await asyncio.wait(
-            futures, return_when=FIRST_COMPLETED,  # type: ignore
-        )
+        await asyncio.wait(futures, return_when=FIRST_COMPLETED)
         for f in futures:
             f.cancel()
 
