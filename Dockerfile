@@ -1,10 +1,10 @@
-FROM python:3.7-buster
+FROM python:3.8-buster
 
 # Prepare virtualenv
 RUN mkdir /app
 WORKDIR /app
 RUN mkdir ./run
-RUN python3.7 -m venv ./virtualenv
+RUN python3.8 -m venv ./virtualenv
 RUN ./virtualenv/bin/pip install --upgrade pip setuptools
 
 # Install dependencies
