@@ -27,5 +27,5 @@ def json_stats(
     return {
         "start-time": stats.start_time.isoformat(),
         "total-connections": stats.total_connections,
-        "connections": [json_connection(l) for l in listeners],
+        "connections": [json_connection(li) for li in listeners],
     }

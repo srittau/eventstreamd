@@ -66,9 +66,9 @@ async def read_http_head(
             raise NotImplementedError()
         return m, p
 
-    def parse_header_line(l: str) -> Tuple[str, ...]:
+    def parse_header_line(li: str) -> Tuple[str, ...]:
         try:
-            return tuple(l.split(": ", maxsplit=1))
+            return tuple(li.split(": ", maxsplit=1))
         except ValueError:
             raise BadRequestError("invalid header line")
 
