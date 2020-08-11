@@ -1,3 +1,7 @@
+# Changes in eventstreamd 0.6.2
+
+* Officially support Python 3.8.
+
 # Changes in eventstreamd 0.6.1
 
 ## Bug Fixes
