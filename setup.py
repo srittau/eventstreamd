@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name="eventstreamd",
-    version="0.6.1",
+    version="0.6.2",
     description="Simple Event Stream Server",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
