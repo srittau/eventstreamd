@@ -19,7 +19,7 @@ setup(
     url="https://github.com/srittau/eventstreamd",
     packages=find_packages(),
     scripts=[os.path.join("bin", "eventstreamd")],
-    tests_require=["asserts >= 0.6"],
+    tests_require=["asserts >= 0.6, < 0.12"],
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
