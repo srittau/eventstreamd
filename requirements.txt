@@ -3,7 +3,7 @@ asserts==0.11.1
 flake8==3.9.2
 json-get==1.1.1
 mypy==0.910
-wheel==0.36.2
+wheel==0.37.0
 
 # Transitive dependencies
 mccabe==0.6.1
