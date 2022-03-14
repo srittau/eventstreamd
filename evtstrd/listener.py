@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import itertools
 import logging
-from asyncio import AbstractEventLoop, StreamReader, StreamWriter
+from asyncio import StreamReader, StreamWriter
 from typing import Any, Callable, Optional, Sequence, cast
 
 from evtstrd.config import Config
