@@ -1,14 +1,9 @@
 import asyncio
 import datetime
 import logging
-from asyncio import (
-    AbstractEventLoop,
-    StreamReader,
-    StreamWriter,
-    FIRST_COMPLETED,
-)
+from asyncio import FIRST_COMPLETED, StreamReader, StreamWriter
 from collections import defaultdict
-from typing import List, Dict, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 from jsonget import JsonValue
 
@@ -19,10 +14,7 @@ from evtstrd.stats import ServerStats
 
 
 class Dispatcher:
-    def __init__(
-        self, loop: AbstractEventLoop, config: Config, stats: ServerStats
-    ) -> None:
-        self._loop = loop
+    def __init__(self, config: Config, stats: ServerStats) -> None:
         self._config = config
         self._stats = stats
         self._listeners: Dict[str, List[Listener]] = defaultdict(list)
@@ -57,9 +49,7 @@ class Dispatcher:
         subsystem: str,
         filters: Sequence[Filter],
     ) -> Listener:
-        listener = Listener(
-            self._config, reader, writer, subsystem, filters, loop=self._loop
-        )
+        listener = Listener(self._config, reader, writer, subsystem, filters)
         listener.referer = referer
         listener.on_close = self._remove_listener
         self._listeners[subsystem].append(listener)

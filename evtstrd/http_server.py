@@ -4,34 +4,22 @@ import asyncio
 import json
 import logging
 import ssl
-from asyncio import (
-    AbstractEventLoop,
-    AbstractServer,
-    StreamReader,
-    StreamWriter,
-)
+from asyncio import (AbstractEventLoop, AbstractServer, StreamReader,
+                     StreamWriter)
 from email.utils import formatdate
 from http import HTTPStatus
 from ssl import SSLContext
 from types import TracebackType
-from typing import List, Optional, Dict, Mapping, Tuple, Type
-from urllib.parse import urlparse, ParseResult, parse_qs
+from typing import Dict, List, Mapping, Optional, Tuple, Type
+from urllib.parse import ParseResult, parse_qs, urlparse
 
 from evtstrd.auth import check_auth
 from evtstrd.config import Config
 from evtstrd.dispatcher import Dispatcher
 from evtstrd.filters import Filter, parse_filter
-from evtstrd.http import (
-    read_http_head,
-    HTTPError,
-    write_http_error,
-    MethodNotAllowedError,
-    NotFoundError,
-    Header,
-    write_http_head,
-    CGIArgumentError,
-    write_response,
-)
+from evtstrd.http import (CGIArgumentError, Header, HTTPError,
+                          MethodNotAllowedError, NotFoundError, read_http_head,
+                          write_http_error, write_http_head, write_response)
 from evtstrd.stats import ServerStats, json_stats
 
 

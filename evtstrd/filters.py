@@ -1,11 +1,10 @@
 import datetime
 import re
-from typing import Callable, Union, Type, Any, cast
+from typing import Any, Callable, Type, Union, cast
 
-from jsonget import json_get, JsonValue, JsonType
+from jsonget import JsonType, JsonValue, json_get
 
 from evtstrd.date import parse_iso_date
-
 
 _Comparator = Callable[[str, Any], bool]
 

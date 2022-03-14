@@ -3,10 +3,10 @@ import datetime
 import itertools
 import logging
 from asyncio import AbstractEventLoop, StreamReader, StreamWriter
-from typing import Sequence, Optional, Callable, Any, cast
+from typing import Any, Callable, Optional, Sequence, cast
 
 from evtstrd.config import Config
-from evtstrd.events import JSONEvent, PingEvent, Event, LogoutEvent
+from evtstrd.events import Event, JSONEvent, LogoutEvent, PingEvent
 from evtstrd.exc import DisconnectedError
 from evtstrd.filters import Filter
 from evtstrd.http import write_chunk, write_last_chunk
@@ -23,12 +23,9 @@ class Listener:
         writer: StreamWriter,
         subsystem: str,
         filters: Sequence[Filter],
-        *,
-        loop: AbstractEventLoop = None,
     ) -> None:
         self.id = next(self._id_counter)
         self._config = config
-        self.loop = loop or asyncio.get_event_loop()
         self.subsystem = subsystem
         self.filters = filters
         self.reader = reader
@@ -64,7 +61,7 @@ class Listener:
                 self._write_event(PingEvent())
             except DisconnectedError:
                 break
-            await asyncio.sleep(self._config.ping_interval, loop=self.loop)
+            await asyncio.sleep(self._config.ping_interval)
 
     async def logout_at(self, time: datetime.datetime) -> None:
         await sleep_until(time)

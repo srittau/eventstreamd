@@ -1,7 +1,6 @@
 import datetime
 import re
 
-
 _iso_date_re = re.compile(r"^(\d\d\d\d)-?(\d\d)-?(\d\d)$")
 
 

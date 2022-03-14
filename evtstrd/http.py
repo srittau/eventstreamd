@@ -1,7 +1,7 @@
 import logging
-from asyncio.streams import StreamWriter, StreamReader
+from asyncio.streams import StreamReader, StreamWriter
 from http import HTTPStatus
-from typing import Tuple, Iterable, List, Dict
+from typing import Dict, Iterable, List, Tuple
 
 Header = Tuple[str, str]
 
@@ -45,7 +45,7 @@ class MethodNotAllowedError(HTTPError):
 
 
 async def read_http_head(
-    reader: StreamReader
+    reader: StreamReader,
 ) -> Tuple[str, str, Dict[str, str]]:
     async def read_line() -> str:
         line_ = await reader.readline()

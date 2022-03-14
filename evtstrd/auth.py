@@ -1,6 +1,6 @@
 import datetime
 from http import HTTPStatus
-from typing import Any, Mapping, Tuple, Optional
+from typing import Any, Mapping, Optional, Tuple
 
 from evtstrd.exc import PluginError
 from evtstrd.http import HTTPError

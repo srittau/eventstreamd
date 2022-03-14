@@ -2,26 +2,19 @@ from __future__ import annotations
 
 import logging
 import os
-from asyncio import (
-    AbstractEventLoop,
-    AbstractServer,
-    StreamReader,
-    StreamWriter,
-    get_event_loop,
-    start_unix_server,
-    open_unix_connection,
-    wait,
-)
+from asyncio import (AbstractEventLoop, AbstractServer, StreamReader,
+                     StreamWriter, get_event_loop, open_unix_connection,
+                     start_unix_server, wait)
 from grp import getgrnam
 from pwd import getpwnam
 from types import TracebackType
-from typing import Any, Coroutine, Type, Optional, Tuple
+from typing import Any, Coroutine, Optional, Tuple, Type
 
-from jsonget import json_get, JsonValue
+from jsonget import JsonValue, json_get
 
 from evtstrd.config import Config
 from evtstrd.dispatcher import Dispatcher
-from evtstrd.exc import ServerAlreadyRunningError, DisconnectedError
+from evtstrd.exc import DisconnectedError, ServerAlreadyRunningError
 from evtstrd.util import read_json_line
 
 
