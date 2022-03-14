@@ -21,6 +21,8 @@ jobs:
             cache-dependency-path: "**/poetry.lock"
         - name: Install poetry
           run: pip --disable-pip-version-check install -U poetry
+        - name: Install Python dependencies
+          run: poetry install
         - name: Lint with flake8
           run: |
             poetry run flake8 --version
