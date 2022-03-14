@@ -18,13 +18,16 @@ jobs:
           with:
             python-version: ${{ matrix.python-version }}
             cache: pip
+            cache-dependency-path: "**/poetry.lock"
+        - name: Install poetry
+          run: pip --disable-pip-version-check install -U poetry
         - name: Lint with flake8
           run: |
-            flake8 --version
-            flake8 --show-source --statistics evtstrd evtstrd_test
+            poetry run flake8 --version
+            poetry run flake8 --show-source --statistics evtstrd evtstrd_test
         - name: Type check with mypy
           run: |
-            mypy --version
-            mypy evtstrd evtstrd_test
+            poetry run mypy --version
+            poetry run mypy evtstrd evtstrd_test
         - name: Test with unittest
-          run: python -Wall -m unittest discover -t . -s evtstrd_test -p "*.py"
+          run: poetry run python -Wall -m unittest discover -t . -s evtstrd_test -p "*.py"

@@ -1,6 +1,0 @@
-#!/usr/bin/python3
-
-from evtstrd.main import main
-
-
-main()
