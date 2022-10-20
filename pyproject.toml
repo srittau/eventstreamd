@@ -21,7 +21,7 @@ python = ">=3.7"
 json-get = "~1.1.1"
 
 [tool.poetry.dev-dependencies]
-asserts = ">= 0.6, <0.12"
+asserts = ">=0.6,<0.13"
 flake8 = "^5.0.4"
 mypy = "0.982"
 
