@@ -17,16 +17,22 @@ packages = [{ include = "evtstrd" }, { include = "evtstrd_test" }]
 eventstreamd = "evtstrd.main:main"
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.7,<4"
 json-get = "~1.1.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 asserts = ">=0.6,<0.13"
+black = "^22.10.0"
 flake8 = "^5.0.4"
+isort = "^5.10.1"
 mypy = "0.990"
 
 [tool.black]
 line-length = 79
+
+[tool.isort]
+profile = "black"
+line_length = 79
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

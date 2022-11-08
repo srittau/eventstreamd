@@ -47,7 +47,10 @@ class Listener:
         return cast(Optional[str], self.writer.get_extra_info("peername")[0])
 
     def notify(
-        self, event_type: str, data: Any, id: str | None = None,
+        self,
+        event_type: str,
+        data: Any,
+        id: str | None = None,
     ) -> None:
         if all(f(data) for f in self.filters):
             logging.debug(f"notifying client {self}")

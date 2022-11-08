@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from asserts import assert_true, assert_false, assert_equal, assert_raises
+from asserts import assert_equal, assert_false, assert_raises, assert_true
 
 from evtstrd.filters import parse_filter
 
