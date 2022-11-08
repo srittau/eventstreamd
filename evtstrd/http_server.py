@@ -71,7 +71,7 @@ class HTTPHandler:
         dispatcher: Dispatcher,
         stats: ServerStats,
         *,
-        loop: AbstractEventLoop = None,
+        loop: AbstractEventLoop | None = None,
     ) -> None:
         self._config = config
         self._dispatcher = dispatcher

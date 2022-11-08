@@ -82,7 +82,7 @@ class SocketServer:
 
 class SocketHandler:
     def __init__(
-        self, dispatcher: Dispatcher, *, loop: AbstractEventLoop = None
+        self, dispatcher: Dispatcher, *, loop: AbstractEventLoop | None = None
     ) -> None:
         self._dispatcher = dispatcher
         self._loop = loop or get_event_loop()

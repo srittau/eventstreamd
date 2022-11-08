@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from typing import Any, SupportsBytes
 
@@ -12,7 +14,7 @@ class Event(SupportsBytes):
     """
 
     def __init__(
-        self, event_type: str, data: str = "", id: str = None
+        self, event_type: str, data: str = "", id: str | None = None
     ) -> None:
         self.type = event_type
         self.id = id
@@ -38,7 +40,7 @@ class PingEvent(Event):
 
 class JSONEvent(Event):
     def __init__(
-        self, event_type: str, json_data: Any, id: str = None
+        self, event_type: str, json_data: Any, id: str | None = None
     ) -> None:
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)

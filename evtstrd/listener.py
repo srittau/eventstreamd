@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import datetime
 import itertools
@@ -44,7 +46,9 @@ class Listener:
     def remote_host(self) -> Optional[str]:
         return cast(Optional[str], self.writer.get_extra_info("peername")[0])
 
-    def notify(self, event_type: str, data: Any, id: str = None) -> None:
+    def notify(
+        self, event_type: str, data: Any, id: str | None = None,
+    ) -> None:
         if all(f(data) for f in self.filters):
             logging.debug(f"notifying client {self}")
             event = JSONEvent(event_type, data, id)
