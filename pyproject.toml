@@ -17,7 +17,7 @@ packages = [{ include = "evtstrd" }, { include = "evtstrd_test" }]
 eventstreamd = "evtstrd.main:main"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4"
+python = "^3.7"
 json-get = "~1.1.1"
 
 [tool.poetry.group.dev.dependencies]
