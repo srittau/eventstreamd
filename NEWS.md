@@ -1,3 +1,7 @@
+# Changes in eventstreamd 2022.12.1
+
+* Change to calendar versioning.
+
 # Changes in eventstreamd 0.6.2
 
 * Officially support Python 3.8.

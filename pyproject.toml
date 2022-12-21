@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eventstreamd"
-version = "0.6.2"
+version = "2022.12.1"
 description = "Simple Event Stream Server"
 readme = "README.md"
 authors = ["Sebastian Rittau <srittau@rittau.biz>"]
