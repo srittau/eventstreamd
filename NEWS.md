@@ -1,3 +1,7 @@
+# Unreleased Changes
+
+* Drop support for Python 3.7 and 3.8.
+
 # Changes in eventstreamd 2022.12.1
 
 * Change to calendar versioning.
