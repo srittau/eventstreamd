@@ -22,10 +22,10 @@ json-get = "~1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 asserts = ">=0.6,<0.13"
-black = "^22.10.0"
+black = "^23.1.0"
 flake8 = "^6.0.0"
 isort = "^5.10.1"
-mypy = "0.991"
+mypy = "~1.0.1"
 
 [tool.black]
 line-length = 79
