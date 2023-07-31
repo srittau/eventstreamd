@@ -27,6 +27,7 @@ flake8 = "^6.0.0"
 isort = "^5.10.1"
 mypy = ">=1.2,<1.5"
 poethepoet = "^0.21.1"
+pytest = "^7.4.0"
 
 [tool.black]
 line-length = 79
@@ -36,10 +37,13 @@ target-version = ["py39"]
 profile = "black"
 line_length = 79
 
+[tool.pytest.ini_options]
+python_files = ["evtstrd_test/*.py"]
+
 [tool.poe.tasks]
 lint = "flake8 --show-source --statistics evtstrd evtstrd_test"
 typecheck = "mypy evtstrd evtstrd_test"
-test = "python -Wall -m unittest discover -t . -s evtstrd_test -p '*.py'"
+test = "pytest"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
