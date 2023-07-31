@@ -24,12 +24,8 @@ jobs:
         - name: Install Python dependencies
           run: poetry install
         - name: Lint with flake8
-          run: |
-            poetry run flake8 --version
-            poetry run flake8 --show-source --statistics evtstrd evtstrd_test
+          run: poetry run poe lint
         - name: Type check with mypy
-          run: |
-            poetry run mypy --version
-            poetry run mypy evtstrd evtstrd_test
+          run: poetry run poe typecheck
         - name: Test with unittest
-          run: poetry run python -Wall -m unittest discover -t . -s evtstrd_test -p "*.py"
+          run: poetry run poe test
