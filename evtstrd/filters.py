@@ -88,7 +88,7 @@ def parse_filter(string: str) -> Filter:
     field = m.group(1).replace(".", "/")
     comparator = _comparators[m.group(2)]
     value = _parse_value(m.group(3))
-    if type(value) == datetime.date:
+    if type(value) is datetime.date:
         cls: Type[Filter] = DateFilter
     else:
         cls = StringFilter
