@@ -1,6 +1,7 @@
 # Unreleased Changes
 
 * Drop support for Python 3.7 and 3.8.
+* Fix exception in server cleanup in Python 3.11+.
 
 # Changes in eventstreamd 2022.12.1
 

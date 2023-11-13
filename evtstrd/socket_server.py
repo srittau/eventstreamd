@@ -7,6 +7,7 @@ from asyncio import (
     AbstractServer,
     StreamReader,
     StreamWriter,
+    create_task,
     get_event_loop,
     open_unix_connection,
     start_unix_server,
@@ -49,7 +50,7 @@ class SocketServer:
     ) -> None:
         assert self._server is not None
         self._server.close()
-        wc = self._server.wait_closed()
+        wc = create_task(self._server.wait_closed())
         self._loop.run_until_complete(wait([wc], timeout=5))
         try:
             os.remove(self._filename)

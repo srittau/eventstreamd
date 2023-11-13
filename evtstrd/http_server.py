@@ -9,6 +9,7 @@ from asyncio import (
     AbstractServer,
     StreamReader,
     StreamWriter,
+    create_task,
 )
 from email.utils import formatdate
 from http import HTTPStatus
@@ -72,7 +73,7 @@ class HTTPServer:
     ) -> None:
         assert self._server is not None
         self._server.close()
-        hs = self._server.wait_closed()
+        hs = create_task(self._server.wait_closed())
         self._loop.run_until_complete(asyncio.wait([hs], timeout=5))
 
 
