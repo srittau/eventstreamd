@@ -1,6 +1,6 @@
 # eventstreamd
 
-![Supported Python Versions](https://img.shields.io/pypi/pyversions/eventstreamd)]
+![Supported Python Versions](https://img.shields.io/pypi/pyversions/eventstreamd)
 [![GitHub](https://img.shields.io/github/release/srittau/eventstreamd/all.svg)](https://github.com/srittau/eventstreamd/releases/)
 [![pypi](https://img.shields.io/pypi/v/eventstreamd.svg)](https://pypi.python.org/pypi/eventstreamd/)
 [![MIT License](https://img.shields.io/github/license/srittau/eventstreamd)](https://https://github.com/srittau/eventstreamd/blob/main/LICENSE)
