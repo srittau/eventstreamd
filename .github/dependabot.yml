@@ -9,10 +9,14 @@ updates:
     groups:
       dependencies:
         exclude-patterns:
+          - "mypy"
           - "types-*"
         update-types:
           - "minor"
           - "patch"
+      mypy:
+        patterns:
+          - "mypy"
       types:
         patterns:
           - "types-*"
