@@ -2,13 +2,13 @@
 
 [[package]]
 name = "asserts"
-version = "0.13.0"
+version = "0.13.1"
 description = "Stand-alone Assertions"
 optional = false
 python-versions = ">=3.8.1"
 files = [
-    {file = "asserts-0.13.0-py3-none-any.whl", hash = "sha256:b598b12fde1d2c6296cf5a14bfa2c20c42344eaa66779dca113b5960a4288612"},
-    {file = "asserts-0.13.0.tar.gz", hash = "sha256:57f365b7bb4dbff640e5e4b1c1ccec6b5e6181cee9b4e42fea15428a86cc9541"},
+    {file = "asserts-0.13.1-py3-none-any.whl", hash = "sha256:f76aa6cc9950326801a4c0ecc2fcc57af2e604effe8fb7136d2802aec0b8f7b3"},
+    {file = "asserts-0.13.1.tar.gz", hash = "sha256:958a69024f9c95905d1391bfede613e9fef987dbf74a399ef3952836c2c2a3bd"},
 ]
 
 [package.dependencies]
@@ -284,13 +284,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "poethepoet"
-version = "0.26.0"
+version = "0.26.1"
 description = "A task runner that works well with poetry."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "poethepoet-0.26.0-py3-none-any.whl", hash = "sha256:d37d543e8ec5fb1d51e04b6c26439fc07c342e541d40fcbe67a3a3189a877db3"},
-    {file = "poethepoet-0.26.0.tar.gz", hash = "sha256:ba964c242676501acc4ed87e71ce4984a752a7bd0684acf13fa34655d9a715eb"},
+    {file = "poethepoet-0.26.1-py3-none-any.whl", hash = "sha256:aa43b443fec5d17d7e76771cccd484e5285805301721a74f059c483ad3276edd"},
+    {file = "poethepoet-0.26.1.tar.gz", hash = "sha256:aaad8541f6072617a60bcff2562d00779b58b353bd0f1847b06d8d0f2b6dc192"},
 ]
 
 [package.dependencies]
