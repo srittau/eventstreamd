@@ -59,8 +59,7 @@ class Dispatcher:
 
     def _log_listener_added(self, listener: Listener) -> None:
         msg = (
-            f"client {listener} subscribed to subsystem "
-            f"'{listener.subsystem}'"
+            f"client {listener} subscribed to subsystem '{listener.subsystem}'"
         )
         if listener.filters:
             filter_str = ", ".join(str(f) for f in listener.filters)

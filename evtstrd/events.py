@@ -5,7 +5,6 @@ from typing import Any, SupportsBytes
 
 
 class Event(SupportsBytes):
-
     """A single event stream event.
 
     Each event has a type (this is not actually required by the event stream

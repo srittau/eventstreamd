@@ -164,8 +164,8 @@ class HTTPHandler:
             raise CGIArgumentError("subsystem", "missing argument")
         try:
             filters = [parse_filter(f) for f in args.get("filter", [])]
-        except ValueError:
-            raise CGIArgumentError("filter", "could not parse filter")
+        except ValueError as exc:
+            raise CGIArgumentError("filter", "could not parse filter") from exc
         return args["subsystem"][0], filters
 
     async def _handle_get_stats(

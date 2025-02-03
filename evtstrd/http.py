@@ -51,15 +51,15 @@ async def read_http_head(
         line_ = await reader.readline()
         try:
             return line_.decode("ascii").strip()
-        except UnicodeDecodeError:
-            raise BadRequestError("non-ASCII characters in header")
+        except UnicodeDecodeError as exc:
+            raise BadRequestError("non-ASCII characters in header") from exc
 
     async def read_request_line() -> Tuple[str, str]:
         line_ = await read_line()
         try:
             m, p, http_tag = line_.split(" ")
-        except ValueError:
-            raise BadRequestError("invalid request line")
+        except ValueError as exc:
+            raise BadRequestError("invalid request line") from exc
         if http_tag != "HTTP/1.1":
             raise BadRequestError("unsupported HTTP version")
         if m not in ["HEAD", "GET", "POST", "PUT"]:
@@ -69,8 +69,8 @@ async def read_http_head(
     def parse_header_line(li: str) -> Tuple[str, ...]:
         try:
             return tuple(li.split(": ", maxsplit=1))
-        except ValueError:
-            raise BadRequestError("invalid header line")
+        except ValueError as exc:
+            raise BadRequestError("invalid header line") from exc
 
     method, path = await read_request_line()
     headers = {}

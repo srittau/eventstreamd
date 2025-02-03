@@ -124,5 +124,5 @@ class SocketHandler:
             id = json_get(message, "id", str)
         except (ValueError, TypeError) as exc:
             logging.error("received invalid JSON: " + str(exc))
-            raise ValueError()
+            raise ValueError(str(exc)) from exc
         return subsystem, event, data, id

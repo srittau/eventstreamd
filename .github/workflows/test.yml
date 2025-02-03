@@ -23,7 +23,7 @@ jobs:
             cache: poetry
         - name: Install Python dependencies
           run: poetry install
-        - name: Lint with flake8
+        - name: Lint with ruff
           run: poetry run poe lint
         - name: Type check with mypy
           run: poetry run poe typecheck

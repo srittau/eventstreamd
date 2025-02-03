@@ -31,8 +31,8 @@ class Filter:
     def _get_value(self, message: JsonValue) -> Any:
         try:
             v = json_get(message, self._field, self.field_type)
-        except (ValueError, TypeError):
-            raise ValueError()
+        except (ValueError, TypeError) as exc:
+            raise ValueError(str(exc)) from exc
         return self.parse_value(cast(Any, v))
 
     @property
