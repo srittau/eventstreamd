@@ -10,7 +10,7 @@ RUN python3 -m venv ./virtualenv
 RUN ./virtualenv/bin/pip install eventstreamd
 
 # Install application
-COPY README.md NEWS.md ./
+COPY README.md CHANGELOG.md ./
 
 # Install configuration
 COPY docker.conf ./
