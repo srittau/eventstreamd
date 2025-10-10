@@ -1,3 +1,5 @@
+# Unreleased changes
+
 # Changes in eventstreamd 2025.10.0
 
 * Support Python 3.13 and 3.14.
