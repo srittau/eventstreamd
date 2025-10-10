@@ -25,7 +25,7 @@ asserts = ">=0.6,<0.14"
 mypy = ">=1.7,<1.19"
 poethepoet = ">=0.22.0"
 pytest = ">=7.4,<9.0"
-ruff = ">= 0.13.0, < 0.14"
+ruff = "~= 0.14.0"
 
 [tool.ruff]
 line-length = 79
