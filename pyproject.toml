@@ -5,15 +5,16 @@ description = "Simple Event Stream Server"
 readme = "README.md"
 authors = [{ name = "Sebastian Rittau", email = "srittau@rittau.biz" }]
 license = "MIT"
-homepage = "https://github.com/srittau/eventstreamd"
-repository = "https://github.com/srittau/eventstreamd"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Topic :: Internet :: WWW/HTTP",
 ]
-packages = [{ include = "evtstrd" }, { include = "evtstrd_test" }]
 requires-python = ">= 3.10"
 dependencies = ["json-get >= 1.1.1, < 2"]
+
+[project.urls]
+homepage = "https://github.com/srittau/eventstreamd"
+repository = "https://github.com/srittau/eventstreamd"
 
 [dependency-groups]
 dev = [
@@ -23,6 +24,9 @@ dev = [
     "pytest >= 9.0.0",
     "ruff ~= 0.14.0",
 ]
+
+[tool.poetry]
+packages = [{ include = "evtstrd" }, { include = "evtstrd_test" }]
 
 [tool.poetry.scripts]
 eventstreamd = "evtstrd.main:main"
