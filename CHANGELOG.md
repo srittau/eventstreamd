@@ -1,72 +1,96 @@
-# Unreleased changes
+# Changelog for eventstreamd
+
+## Unreleased
+
+### Added
 
 * Add a `py.typed` file to indicate that the package is typed.
 
-# Changes in eventstreamd 2025.10.0
+## 2025.10.0
+
+### Added
 
 * Support Python 3.13 and 3.14.
+
+### Removed
+
 * Drop support for Python 3.9.
 
-# Changes in eventstreamd 2023.11.0
+## 2023.11.0
+
+### Added
 
 * Support Python 3.12.
+
+### Removed
+
 * Drop support for Python 3.7 and 3.8.
+
+### Fixed
+
 * Fix exception in server cleanup in Python 3.11+.
 
-# Changes in eventstreamd 2022.12.1
+## 2022.12.1
 
-* Change to calendar versioning.
+### Added
+
 * Officially support Python 3.9 through 3.11.
 
-# Changes in eventstreamd 0.6.2
+### Changed
+
+* Change to calendar versioning.
+
+## 0.6.2
+
+### Added
 
 * Officially support Python 3.8.
 
-# Changes in eventstreamd 0.6.1
+## 0.6.1
 
-## Bug Fixes
+### Fixed
 
 * Correctly install subpackage `evtstrd.plugins`.
 
-# Changes in eventstreamd 0.6.0
+## 0.6.0
 
-## Incompatible Changes
-
-* Drop Python 3.6 support.
-
-## New Features
+### Added
 
 * Add support for authorization plugins.
 
-## Improvements
+### Changed
 
 * Correctly identify as `eventstreamd` in the `Server` HTTP header.
 
-# Changes in eventstreamd 0.5.4
+### Removed
 
-## Improvements
+* Drop Python 3.6 support.
 
-* Filters not support lower than and greater than.
+## 0.5.4
 
-# Changes in eventstreamd 0.5.3
+### Added
 
-## Improvements
+* Filters now support lower than and greater than.
+
+## 0.5.3
+
+### Added
+
+* [docker] Support debug mode using the `DEBUG` environment variable.
+
+### Changed
 
 * Improved log output.
 * Improved debug mode output.
 
-## Docker
+## 0.5.2
 
-* Support debug mode using the `DEBUG` environment variable.
-
-# Changes in eventstreamd 0.5.2
-
-## Improvements
+### Added
 
 * Add a debug mode, enabled with the `-d` command line flag.
 
-# Changes in eventstreamd 0.5.1
+## 0.5.1
 
-## Bug fixes
+### Fixed
 
 * Graceful shutdown on `SIGTERM` and `SIGINT`.
