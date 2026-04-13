@@ -25,7 +25,7 @@ wheels = [
 
 [[package]]
 name = "eventstreamd"
-version = "2025.10.1.dev0"
+version = "2026.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "json-get" },

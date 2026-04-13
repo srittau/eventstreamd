@@ -1,6 +1,6 @@
 [project]
 name = "eventstreamd"
-version = "2025.10.1.dev"
+version = "2026.4.0"
 description = "Simple Event Stream Server"
 readme = "README.md"
 authors = [{ name = "Sebastian Rittau", email = "sebastian.rittau@zfutura.de" }]
