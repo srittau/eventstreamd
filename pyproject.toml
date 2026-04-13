@@ -21,11 +21,11 @@ repository = "https://github.com/srittau/eventstreamd"
 
 [dependency-groups]
 dev = [
-    "asserts >= 0.6, < 0.14",
-    "mypy ~= 1.18.0",
+    "asserts ~= 0.14.0",
+    "mypy ~= 1.20.1",
     "poethepoet >= 0.44.0",
     "pytest >= 9.0.3",
-    "ruff ~= 0.14.14",
+    "ruff ~= 0.15.10",
 ]
 
 [tool.poetry]
