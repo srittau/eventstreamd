@@ -3,7 +3,7 @@ name = "eventstreamd"
 version = "2025.10.1.dev"
 description = "Simple Event Stream Server"
 readme = "README.md"
-authors = [{ name = "Sebastian Rittau", email = "srittau@rittau.biz" }]
+authors = [{ name = "Sebastian Rittau", email = "sebastian.rittau@zfutura.de" }]
 license = "MIT"
 license-files = ["LICENSE"]
 classifiers = [
