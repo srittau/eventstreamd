@@ -23,9 +23,9 @@ repository = "https://github.com/srittau/eventstreamd"
 dev = [
     "asserts >= 0.6, < 0.14",
     "mypy ~= 1.18.0",
-    "poethepoet >= 0.22.0",
-    "pytest >= 9.0.0",
-    "ruff ~= 0.14.0",
+    "poethepoet >= 0.44.0",
+    "pytest >= 9.0.3",
+    "ruff ~= 0.14.14",
 ]
 
 [tool.poetry]
