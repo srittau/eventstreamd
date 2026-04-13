@@ -1,5 +1,7 @@
 # Unreleased changes
 
+* Add a `py.typed` file to indicate that the package is typed.
+
 # Changes in eventstreamd 2025.10.0
 
 * Support Python 3.13 and 3.14.
@@ -24,7 +26,7 @@
 
 ## Bug Fixes
 
-* Correctly install subpackage ``evtstrd.plugins``.
+* Correctly install subpackage `evtstrd.plugins`.
 
 # Changes in eventstreamd 0.6.0
 
