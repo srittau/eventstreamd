@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import signal
-from asyncio import AbstractEventLoop, get_event_loop
+from asyncio import get_event_loop
 
 from evtstrd.config import Config
 from evtstrd.dispatcher import Dispatcher
@@ -10,19 +11,19 @@ from evtstrd.socket_server import SocketServer
 from evtstrd.stats import ServerStats
 
 
-def run_server(config: Config) -> None:
-    loop = get_event_loop()
-    _setup_signal_handlers(loop)
+async def run_server(config: Config) -> None:
+    stop_event = asyncio.Event()
+    _setup_signal_handlers(stop_event)
+
     stats = ServerStats()
     dispatcher = Dispatcher(config, stats)
-    with SocketServer(loop, config, dispatcher):
-        with HTTPServer(loop, config, dispatcher, stats):
-            loop.run_forever()
+    async with SocketServer(config, dispatcher):
+        async with HTTPServer(config, dispatcher, stats):
+            await stop_event.wait()
             dispatcher.disconnect_all()
-    loop.run_until_complete(loop.shutdown_asyncgens())
-    loop.close()
 
 
-def _setup_signal_handlers(loop: AbstractEventLoop) -> None:
-    loop.add_signal_handler(signal.SIGINT, loop.stop)
-    loop.add_signal_handler(signal.SIGTERM, loop.stop)
+def _setup_signal_handlers(stop_event: asyncio.Event) -> None:
+    loop = get_event_loop()
+    loop.add_signal_handler(signal.SIGINT, stop_event.set)
+    loop.add_signal_handler(signal.SIGTERM, stop_event.set)

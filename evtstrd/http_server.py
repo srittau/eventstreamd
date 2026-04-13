@@ -4,13 +4,7 @@ import asyncio
 import json
 import logging
 import ssl
-from asyncio import (
-    AbstractEventLoop,
-    AbstractServer,
-    StreamReader,
-    StreamWriter,
-    create_task,
-)
+from asyncio import AbstractServer, StreamReader, StreamWriter
 from collections.abc import Mapping
 from email.utils import formatdate
 from http import HTTPStatus
@@ -38,22 +32,19 @@ from evtstrd.stats import ServerStats, json_stats
 class HTTPServer:
     def __init__(
         self,
-        loop: AbstractEventLoop,
         config: Config,
         dispatcher: Dispatcher,
         stats: ServerStats,
     ) -> None:
-        self._loop = loop
         self._config = config
-        self._handler = HTTPHandler(config, dispatcher, stats, loop=loop)
+        self._handler = HTTPHandler(config, dispatcher, stats)
         self._server: AbstractServer | None = None
 
-    def __enter__(self) -> None:
+    async def __aenter__(self) -> None:
         ssl_context = self._ssl_context()
-        f = asyncio.start_server(
+        self._server = await asyncio.start_server(
             self._handler.handle, port=self._config.http_port, ssl=ssl_context
         )
-        self._server = self._loop.run_until_complete(f)
 
     def _ssl_context(self) -> SSLContext | None:
         if not self._config.with_ssl:
@@ -64,11 +55,11 @@ class HTTPServer:
         ctx.load_cert_chain(self._config.cert_file, self._config.key_file)
         return ctx
 
-    def __exit__(self, *_: object) -> None:
+    async def __aexit__(self, *_: object) -> None:
         assert self._server is not None
         self._server.close()
-        hs = create_task(self._server.wait_closed())
-        self._loop.run_until_complete(asyncio.wait([hs], timeout=5))
+        async with asyncio.timeout(5):
+            await self._server.wait_closed()
 
 
 class HTTPHandler:
@@ -77,13 +68,10 @@ class HTTPHandler:
         config: Config,
         dispatcher: Dispatcher,
         stats: ServerStats,
-        *,
-        loop: AbstractEventLoop | None = None,
     ) -> None:
         self._config = config
         self._dispatcher = dispatcher
         self._stats = stats
-        self._loop = loop or asyncio.get_event_loop()
 
     async def handle(self, reader: StreamReader, writer: StreamWriter) -> None:
         try:
@@ -100,6 +88,8 @@ class HTTPHandler:
                 "Internal Server Error\r\n",
             )
         writer.close()
+        async with asyncio.timeout(5):
+            await writer.wait_closed()
 
     async def _handle_request(
         self,
@@ -132,7 +122,7 @@ class HTTPHandler:
         headers: Mapping[str, str],
     ) -> None:
         subsystem, filters = self._parse_event_args(url.query)
-        expire, data = await check_auth("events", headers, subsystem=subsystem)
+        expire, _ = await check_auth("events", headers, subsystem=subsystem)
         response_headers = self._default_headers() + [
             ("Transfer-Encoding", "chunked"),
             ("Content-Type", "text/event-stream"),

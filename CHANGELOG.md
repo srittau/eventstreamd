@@ -6,6 +6,10 @@
 
 * Add a `py.typed` file to indicate that the package is typed.
 
+### Fixed
+
+* Fix runtime errors that complain about missing event loop.
+
 ## 2025.10.0
 
 ### Added

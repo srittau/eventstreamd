@@ -3,15 +3,11 @@ from __future__ import annotations
 import logging
 import os
 from asyncio import (
-    AbstractEventLoop,
     AbstractServer,
     StreamReader,
     StreamWriter,
-    create_task,
-    get_event_loop,
     open_unix_connection,
     start_unix_server,
-    wait,
 )
 from collections.abc import Coroutine
 from grp import getgrnam
@@ -27,37 +23,33 @@ from evtstrd.util import read_json_line
 
 
 class SocketServer:
-    def __init__(
-        self, loop: AbstractEventLoop, config: Config, dispatcher: Dispatcher
-    ) -> None:
-        self._loop = loop
+    def __init__(self, config: Config, dispatcher: Dispatcher) -> None:
         self._config = config
         self._filename = config.socket_file
-        self._socket_handler = SocketHandler(dispatcher, loop=loop)
+        self._socket_handler = SocketHandler(dispatcher)
         self._server: AbstractServer | None = None
 
-    def __enter__(self) -> None:
-        self._remove_stale_socket()
-        f = start_unix_server(self._socket_handler.handle, path=self._filename)
-        self._server = self._loop.run_until_complete(f)
+    async def __aenter__(self) -> None:
+        await self._remove_stale_socket()
+        self._server = await start_unix_server(
+            self._socket_handler.handle, path=self._filename
+        )
         self._change_socket_permissions()
 
-    def __exit__(self, *_: object) -> None:
+    async def __aexit__(self, *_: object) -> None:
         assert self._server is not None
         self._server.close()
-        wc = create_task(self._server.wait_closed())
-        self._loop.run_until_complete(wait([wc], timeout=5))
+        await self._server.wait_closed()
         try:
             os.remove(self._filename)
         except FileNotFoundError:
             pass
 
-    def _remove_stale_socket(self) -> None:
+    async def _remove_stale_socket(self) -> None:
         if not os.path.exists(self._filename):
             return
         try:
-            fut = open_unix_connection(self._filename)
-            self._loop.run_until_complete(fut)
+            await open_unix_connection(self._filename)
         except ConnectionRefusedError:
             os.remove(self._filename)
             logging.warning(f"removed stale socket file {self._filename}")
@@ -84,11 +76,8 @@ class SocketServer:
 
 
 class SocketHandler:
-    def __init__(
-        self, dispatcher: Dispatcher, *, loop: AbstractEventLoop | None = None
-    ) -> None:
+    def __init__(self, dispatcher: Dispatcher) -> None:
         self._dispatcher = dispatcher
-        self._loop = loop or get_event_loop()
 
     async def handle(self, reader: StreamReader, _: StreamWriter) -> None:
         while True:

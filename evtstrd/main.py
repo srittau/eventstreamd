@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 
@@ -13,7 +14,7 @@ def main() -> None:
         logging.root.setLevel(logging.DEBUG)
         logging.getLogger("asyncio").setLevel(logging.DEBUG)
     try:
-        run_server(config)
+        asyncio.run(run_server(config))
     except ServerAlreadyRunningError:
         print("server already running, exiting", file=sys.stderr)
         sys.exit(1)

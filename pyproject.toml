@@ -47,6 +47,7 @@ python_files = ["evtstrd_test/*.py"]
 lint = "ruff check"
 typecheck = "mypy evtstrd evtstrd_test"
 test = "pytest"
+build-docker-image = "docker build -t srittau/eventstreamd:latest ."
 
 [build-system]
 requires = ["uv_build ~= 0.11.6"]
