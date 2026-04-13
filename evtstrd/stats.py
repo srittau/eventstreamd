@@ -1,7 +1,28 @@
 import datetime
-from typing import Any, Dict, Iterable
+from collections.abc import Iterable
+from typing import NotRequired, TypedDict
 
 from evtstrd.listener import Listener
+
+JSONConnection = TypedDict(
+    "JSONConnection",
+    {
+        "subsystem": str,
+        "filters": list[str],
+        "connection-time": str,
+        "remote-host": str | None,
+        "referer": NotRequired[str],
+    },
+)
+
+JSONStats = TypedDict(
+    "JSONStats",
+    {
+        "start-time": str,
+        "total-connections": int,
+        "connections": list[JSONConnection],
+    },
+)
 
 
 class ServerStats:
@@ -10,11 +31,9 @@ class ServerStats:
         self.total_connections = 0
 
 
-def json_stats(
-    stats: ServerStats, listeners: Iterable[Listener]
-) -> Dict[str, Any]:
-    def json_connection(listener: Listener) -> Dict[str, Any]:
-        c = {
+def json_stats(stats: ServerStats, listeners: Iterable[Listener]) -> JSONStats:
+    def json_connection(listener: Listener) -> JSONConnection:
+        c: JSONConnection = {
             "subsystem": listener.subsystem,
             "filters": [str(f) for f in listener.filters],
             "connection-time": listener.connection_time.isoformat(),

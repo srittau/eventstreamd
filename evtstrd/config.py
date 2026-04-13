@@ -1,6 +1,5 @@
 import configparser
 from configparser import NoOptionError
-from typing import Optional
 
 DEFAULT_CONFIG = "/etc/eventstreamd.conf"
 
@@ -15,11 +14,11 @@ PING_INTERVAL = 20
 class Config:
     def __init__(self) -> None:
         self.socket_file = SOCKET_NAME
-        self.socket_owner: Optional[str] = None
-        self.socket_group: Optional[str] = None
+        self.socket_owner: str | None = None
+        self.socket_group: str | None = None
         self.socket_mode = SOCKET_MODE
-        self.cert_file: Optional[str] = None
-        self.key_file: Optional[str] = None
+        self.cert_file: str | None = None
+        self.key_file: str | None = None
         self.http_port = HTTP_PORT
         self.ping_interval = PING_INTERVAL
         self.debug = False

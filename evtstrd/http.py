@@ -1,9 +1,10 @@
 import logging
 from asyncio.streams import StreamReader, StreamWriter
+from collections.abc import Iterable
 from http import HTTPStatus
-from typing import Dict, Iterable, List, Tuple
+from typing import TypeAlias
 
-Header = Tuple[str, str]
+Header: TypeAlias = tuple[str, str]
 
 
 class HTTPError(Exception):
@@ -16,7 +17,7 @@ class HTTPError(Exception):
     ) -> None:
         super().__init__(message)
         self.status = status
-        self.headers: List[Header] = list(headers)
+        self.headers: list[Header] = list(headers)
 
 
 class BadRequestError(HTTPError):
@@ -46,7 +47,7 @@ class MethodNotAllowedError(HTTPError):
 
 async def read_http_head(
     reader: StreamReader,
-) -> Tuple[str, str, Dict[str, str]]:
+) -> tuple[str, str, dict[str, str]]:
     async def read_line() -> str:
         line_ = await reader.readline()
         try:
@@ -54,7 +55,7 @@ async def read_http_head(
         except UnicodeDecodeError as exc:
             raise BadRequestError("non-ASCII characters in header") from exc
 
-    async def read_request_line() -> Tuple[str, str]:
+    async def read_request_line() -> tuple[str, str]:
         line_ = await read_line()
         try:
             m, p, http_tag = line_.split(" ")
@@ -66,7 +67,7 @@ async def read_http_head(
             raise NotImplementedError()
         return m, p
 
-    def parse_header_line(li: str) -> Tuple[str, ...]:
+    def parse_header_line(li: str) -> tuple[str, ...]:
         try:
             return tuple(li.split(": ", maxsplit=1))
         except ValueError as exc:

@@ -13,10 +13,10 @@ from asyncio import (
     start_unix_server,
     wait,
 )
+from collections.abc import Coroutine
 from grp import getgrnam
 from pwd import getpwnam
-from types import TracebackType
-from typing import Any, Coroutine, Optional, Tuple, Type
+from typing import Any
 
 from jsonget import JsonValue, json_get
 
@@ -34,7 +34,7 @@ class SocketServer:
         self._config = config
         self._filename = config.socket_file
         self._socket_handler = SocketHandler(dispatcher, loop=loop)
-        self._server: Optional[AbstractServer] = None
+        self._server: AbstractServer | None = None
 
     def __enter__(self) -> None:
         self._remove_stale_socket()
@@ -42,12 +42,7 @@ class SocketServer:
         self._server = self._loop.run_until_complete(f)
         self._change_socket_permissions()
 
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> None:
+    def __exit__(self, *_: object) -> None:
         assert self._server is not None
         self._server.close()
         wc = create_task(self._server.wait_closed())
@@ -116,7 +111,7 @@ class SocketHandler:
             self._dispatcher.notify(subsystem, event, data, id)
 
     @staticmethod
-    def _get_event_data(message: JsonValue) -> Tuple[str, str, JsonValue, str]:
+    def _get_event_data(message: JsonValue) -> tuple[str, str, JsonValue, str]:
         try:
             subsystem = json_get(message, "subsystem", str)
             event = json_get(message, "event", str)

@@ -1,10 +1,10 @@
 from importlib import import_module
-from typing import Any, Optional
+from typing import Any
 
 from evtstrd.exc import PluginError
 
 
-def load_plugin(plugin: str, obj: str) -> Optional[Any]:
+def load_plugin(plugin: str, obj: str) -> Any | None:
     try:
         pkg = import_module("." + plugin, "evtstrd.plugins")
     except ImportError:

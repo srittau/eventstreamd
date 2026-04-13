@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
-from typing import Any, SupportsBytes
+
+from jsonget import JsonValue
 
 
-class Event(SupportsBytes):
+class Event:
     """A single event stream event.
 
     Each event has a type (this is not actually required by the event stream
@@ -39,7 +40,10 @@ class PingEvent(Event):
 
 class JSONEvent(Event):
     def __init__(
-        self, event_type: str, json_data: Any, id: str | None = None
+        self,
+        event_type: str,
+        json_data: str | JsonValue,
+        id: str | None = None,
     ) -> None:
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)

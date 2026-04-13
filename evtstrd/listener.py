@@ -5,7 +5,9 @@ import datetime
 import itertools
 import logging
 from asyncio import StreamReader, StreamWriter
-from typing import Any, Callable, Optional, Sequence, cast
+from collections.abc import Callable, Iterable
+
+from jsonget import JsonValue
 
 from evtstrd.config import Config
 from evtstrd.events import Event, JSONEvent, LogoutEvent, PingEvent
@@ -24,7 +26,7 @@ class Listener:
         reader: StreamReader,
         writer: StreamWriter,
         subsystem: str,
-        filters: Sequence[Filter],
+        filters: Iterable[Filter],
     ) -> None:
         self.id = next(self._id_counter)
         self._config = config
@@ -32,9 +34,9 @@ class Listener:
         self.filters = filters
         self.reader = reader
         self.writer = writer
-        self.on_close: Optional[Callable[[Listener], None]] = None
+        self.on_close: Callable[[Listener], None] | None = None
         self.connection_time = datetime.datetime.now()
-        self.referer: Optional[str] = None
+        self.referer: str | None = None
 
     def __str__(self) -> str:
         return f"#{self.id}"
@@ -43,13 +45,18 @@ class Listener:
         return "<Listener 0x{:x} for {}>".format(id(self), self.subsystem)
 
     @property
-    def remote_host(self) -> Optional[str]:
-        return cast(Optional[str], self.writer.get_extra_info("peername")[0])
+    def remote_host(self) -> str | None:
+        host = self.writer.get_extra_info("peername")[0]
+        if host is not None and not isinstance(host, str):
+            raise RuntimeError(
+                f"unexpected type of peername host {type(host)}"
+            )
+        return host
 
     def notify(
         self,
         event_type: str,
-        data: Any,
+        data: JsonValue,
         id: str | None = None,
     ) -> None:
         if all(f(data) for f in self.filters):

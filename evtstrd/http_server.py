@@ -11,11 +11,10 @@ from asyncio import (
     StreamWriter,
     create_task,
 )
+from collections.abc import Mapping
 from email.utils import formatdate
 from http import HTTPStatus
 from ssl import SSLContext
-from types import TracebackType
-from typing import Dict, List, Mapping, Optional, Tuple, Type
 from urllib.parse import ParseResult, parse_qs, urlparse
 
 from evtstrd.auth import check_auth
@@ -47,7 +46,7 @@ class HTTPServer:
         self._loop = loop
         self._config = config
         self._handler = HTTPHandler(config, dispatcher, stats, loop=loop)
-        self._server: Optional[AbstractServer] = None
+        self._server: AbstractServer | None = None
 
     def __enter__(self) -> None:
         ssl_context = self._ssl_context()
@@ -56,7 +55,7 @@ class HTTPServer:
         )
         self._server = self._loop.run_until_complete(f)
 
-    def _ssl_context(self) -> Optional[SSLContext]:
+    def _ssl_context(self) -> SSLContext | None:
         if not self._config.with_ssl:
             return None
         assert self._config.cert_file is not None
@@ -65,12 +64,7 @@ class HTTPServer:
         ctx.load_cert_chain(self._config.cert_file, self._config.key_file)
         return ctx
 
-    def __exit__(
-        self,
-        exc_type: Type[BaseException],
-        exc_val: BaseException,
-        exc_tb: TracebackType,
-    ) -> None:
+    def __exit__(self, *_: object) -> None:
         assert self._server is not None
         self._server.close()
         hs = create_task(self._server.wait_closed())
@@ -113,7 +107,7 @@ class HTTPHandler:
         writer: StreamWriter,
         method: str,
         path: str,
-        headers: Dict[str, str],
+        headers: Mapping[str, str],
     ) -> None:
         url = urlparse(path)
         if url.path == "/events":
@@ -127,7 +121,7 @@ class HTTPHandler:
         else:
             raise NotFoundError(path)
 
-    def _default_headers(self) -> List[Header]:
+    def _default_headers(self) -> list[Header]:
         return [("Date", formatdate(usegmt=True)), ("Server", "eventstreamd")]
 
     async def _handle_get_events(
@@ -158,7 +152,7 @@ class HTTPHandler:
             reader, writer, referer, subsystem, filters, expire=expire
         )
 
-    def _parse_event_args(self, query: str) -> Tuple[str, List[Filter]]:
+    def _parse_event_args(self, query: str) -> tuple[str, list[Filter]]:
         args = parse_qs(query)
         if "subsystem" not in args:
             raise CGIArgumentError("subsystem", "missing argument")

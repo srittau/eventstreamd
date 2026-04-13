@@ -3,7 +3,7 @@ import datetime
 import logging
 from asyncio import FIRST_COMPLETED, StreamReader, StreamWriter
 from collections import defaultdict
-from typing import Dict, List, Optional, Sequence
+from collections.abc import Iterable
 
 from jsonget import JsonValue
 
@@ -17,10 +17,10 @@ class Dispatcher:
     def __init__(self, config: Config, stats: ServerStats) -> None:
         self._config = config
         self._stats = stats
-        self._listeners: Dict[str, List[Listener]] = defaultdict(list)
+        self._listeners: dict[str, list[Listener]] = defaultdict(list)
 
     @property
-    def all_listeners(self) -> List[Listener]:
+    def all_listeners(self) -> list[Listener]:
         all_listeners = []
         for key in self._listeners:
             all_listeners.extend(self._listeners[key])
@@ -30,11 +30,11 @@ class Dispatcher:
         self,
         reader: StreamReader,
         writer: StreamWriter,
-        referer: Optional[str],
+        referer: str | None,
         subsystem: str,
-        filters: Sequence[Filter],
+        filters: Iterable[Filter],
         *,
-        expire: Optional[datetime.datetime] = None,
+        expire: datetime.datetime | None = None,
     ) -> None:
         listener = self._setup_listener(
             reader, writer, referer, subsystem, filters
@@ -45,9 +45,9 @@ class Dispatcher:
         self,
         reader: StreamReader,
         writer: StreamWriter,
-        referer: Optional[str],
+        referer: str | None,
         subsystem: str,
-        filters: Sequence[Filter],
+        filters: Iterable[Filter],
     ) -> Listener:
         listener = Listener(self._config, reader, writer, subsystem, filters)
         listener.referer = referer
@@ -74,7 +74,7 @@ class Dispatcher:
         )
 
     async def _run_listener(
-        self, listener: Listener, expire: Optional[datetime.datetime]
+        self, listener: Listener, expire: datetime.datetime | None
     ) -> None:
         futures = [asyncio.ensure_future(listener.ping_loop())]
         if expire:

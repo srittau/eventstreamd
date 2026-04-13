@@ -1,12 +1,13 @@
 import datetime
 import re
-from typing import Any, Callable, Type, Union, cast
+from collections.abc import Callable
+from typing import Any, TypeAlias, cast
 
 from jsonget import JsonType, JsonValue, json_get
 
 from evtstrd.date import parse_iso_date
 
-_Comparator = Callable[[str, Any], bool]
+_Comparator: TypeAlias = Callable[[str, Any], bool]
 
 
 class Filter:
@@ -54,7 +55,7 @@ class StringFilter(Filter):
 
 class DateFilter(Filter):
     @property
-    def field_type(self) -> Type[str]:
+    def field_type(self) -> type[str]:
         return str
 
     def parse_value(self, v: str) -> datetime.date:
@@ -71,7 +72,7 @@ _comparators = {
 }
 
 
-def _parse_value(v: str) -> Union[str, int, datetime.date]:
+def _parse_value(v: str) -> str | int | datetime.date:
     if len(v) >= 2 and v.startswith("'") and v.endswith("'"):
         return v[1:-1]
     try:
@@ -89,7 +90,7 @@ def parse_filter(string: str) -> Filter:
     comparator = _comparators[m.group(2)]
     value = _parse_value(m.group(3))
     if type(value) is datetime.date:
-        cls: Type[Filter] = DateFilter
+        cls: type[Filter] = DateFilter
     else:
         cls = StringFilter
     return cls(field, comparator, value, string)

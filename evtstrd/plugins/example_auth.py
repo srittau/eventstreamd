@@ -1,10 +1,14 @@
 import datetime
 from datetime import timedelta
-from typing import Any, Mapping
+from typing import Any, Protocol
+
+
+class _SupportsGet(Protocol):
+    def get(self, key: str) -> str | None: ...
 
 
 async def check_auth(
-    route: str, headers: Mapping[str, str], **kwargs: Any
+    route: str, headers: _SupportsGet, **kwargs: object
 ) -> Any:
     authorization = headers.get("authorization")
 
