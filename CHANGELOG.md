@@ -6,6 +6,10 @@
 
 * Add a `py.typed` file to indicate that the package is typed.
 
+### Removed
+
+* Remove support for Python 3.10.
+
 ### Fixed
 
 * Fix runtime errors that complain about missing event loop.
