@@ -29,6 +29,9 @@ dev = [
     "ruff ~= 0.15.10",
 ]
 
+[tool.uv]
+exclude-newer = "5 days"
+
 [tool.uv.build-backend]
 module-root = ""
 module-name = "evtstrd"
